@@ -59,3 +59,10 @@ export async function upsertPlayer(input: {
 export async function checkDatabaseConnection(): Promise<void> {
   await getDatabasePool().query("SELECT 1");
 }
+
+export async function closeDatabasePool(): Promise<void> {
+  if (!pool) return;
+  const currentPool = pool;
+  pool = undefined;
+  await currentPool.end();
+}
