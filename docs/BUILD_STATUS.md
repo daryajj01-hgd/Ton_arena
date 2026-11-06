@@ -30,6 +30,7 @@
 - [x] Persistent player progression schema for XP, completed games, total correct answers, and best score.
 - [x] Server awards 10 XP for completing a round plus 5 XP per correct answer; levels advance every 100 XP.
 - [x] Authenticated progress API and frontend level/XP display; result screen shows earned and cumulative XP.
+- [x] Answer submission includes the expected question index; the server rejects out-of-sequence answers and safely returns prior recorded answers on retries.
 - [x] Frontend session token is kept in memory only; a fresh Telegram launch re-authenticates rather than persisting a bearer token in browser storage.
 - [x] CI runs frontend type-checking, backend compilation, Telegram authentication tests, and frontend production build as separate steps.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
@@ -44,7 +45,7 @@
 - Frontend Telegram sign-in and server game API integration are implemented in source. They still need a live Mini App end-to-end test against a provisioned database and deployed API. Do not consider authentication production-ready.
 - Server-side Brain Sprint session and scoring code passed backend compilation and automated tests in GitHub Actions on commit `73f07448f4203acb402a59dd2db88c54b79fd463`. It cannot run against real players until Neon is provisioned and all three migrations are applied. The current game question bank is still a prototype and should be moved out of the public repository before competitive public launch.
 - XP persistence, rate limiting, full anti-cheat controls, and live leaderboards do not exist yet.
-- GitHub Actions completed successfully on commit `1d7551a34d91537d26a745b1f4f68a05291b9cab`, including frontend type-check, backend compilation, Telegram auth tests, and frontend production build. This validates the code build, not a live Telegram/Neon deployment.
+- GitHub Actions completed successfully on commit `74c08b7185b71adb74c04abef0d865f0528b9b31`, including frontend type-check, backend compilation, Telegram auth and game logic tests, and frontend production build. This validates the code build, not a live Telegram/Neon deployment.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
 
 ## Next milestone
