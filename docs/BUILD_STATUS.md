@@ -45,16 +45,15 @@
 - In a verified Telegram Mini App session, submitted answers and score are processed by the server; the browser timer is a display aid and the server enforces the question and round deadlines. Outside Telegram, the app still offers a local preview.
 - Neon has been selected, but no Neon project/account has been created or connected and the migration has not been applied. Player persistence is therefore not live yet.
 - Frontend Telegram sign-in and server game API integration are implemented in source. They still need a live Mini App end-to-end test against a provisioned database and deployed API. Do not consider authentication production-ready.
-- Server-side Brain Sprint session and scoring code passed backend compilation and automated tests in GitHub Actions on commit `73f07448f4203acb402a59dd2db88c54b79fd463`. It cannot run against real players until Neon is provisioned and all three migrations are applied. The current game question bank is still a prototype and should be moved out of the public repository before competitive public launch.
-- XP persistence, rate limiting, full anti-cheat controls, and live leaderboards do not exist yet.
-- GitHub Actions completed successfully on commit `74c08b7185b71adb74c04abef0d865f0528b9b31`, including frontend type-check, backend compilation, Telegram auth and game logic tests, and frontend production build. This validates the code build, not a live Telegram/Neon deployment.
+- Server-side Brain Sprint sessions, scoring, XP, daily mission, and leaderboard code passed GitHub Actions. These features cannot run against real players until Neon is provisioned and all five migrations are applied. Earlier public commits exposed the prototype answer indexes, so this question set must be replaced before competitive public launch.
+- XP, daily mission, and leaderboard features are implemented in code but are not live until Neon is connected and migrations are applied. Rate limiting and full anti-cheat controls are not yet implemented.
+- GitHub Actions completed successfully on commit `252a35c51e37aa6a13160da49dafa54ece3fef54`, including frontend type-check, backend compilation, Telegram auth/game logic tests, and frontend production build. This validates the code build, not a live Telegram/Neon deployment.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
 
 ## Next milestone
-1. Confirm the latest GitHub Actions run passes after frontend game integration.
-2. Create and connect the Neon project; apply migrations 001–003.
-3. Configure Telegram bot token and `BRAIN_SPRINT_ANSWER_KEY` as server-only secrets, then deploy the API.
-4. Test Telegram sign-in and complete Brain Sprint rounds end-to-end.
-5. Replace the prototype question bank with fresh questions and protected answer keys before competitive launch.
-6. Add XP persistence, player progression, and leaderboards.
-7. Verify language switching, RTL/LTR, and accessibility on real mobile devices.
+1. Create and connect the Neon project; apply migrations 001–005.
+2. Configure the Telegram bot token and `BRAIN_SPRINT_ANSWER_KEY` as server-only secrets, then deploy the API.
+3. Test Telegram sign-in, full Brain Sprint rounds, XP, daily mission, and leaderboard against the live database.
+4. Replace the prototype question bank with fresh questions and protected answer keys before competitive launch.
+5. Add rate limiting, stronger anti-cheat controls, and operational monitoring.
+6. Verify language switching, RTL/LTR, and accessibility on real mobile devices.
