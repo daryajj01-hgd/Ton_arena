@@ -31,24 +31,23 @@
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
 
 ## Important limitations
-- This is a frontend prototype only.
+- The product is still an MVP prototype: Telegram Mini App play now uses server-issued game sessions and server-side scoring, while non-Telegram browser preview remains local.
 - Language preference is now saved in browser localStorage and should survive page reloads on the same browser/device; this has been verified in source code but not yet tested in a live browser.
 - Translations are initial product copy and should receive native-speaker review before public launch.
 - The 11-language foundation is extensible; it does not mean every world language has been added.
-- Answers, countdown, and score are handled in the browser only.
+- In a verified Telegram Mini App session, submitted answers and score are processed by the server; the browser timer is a display aid and the server enforces the question and round deadlines. Outside Telegram, the app still offers a local preview.
 - Neon has been selected, but no Neon project/account has been created or connected and the migration has not been applied. Player persistence is therefore not live yet.
-- Session endpoints are implemented in the API, but they are not yet deployed or end-to-end tested. The frontend does not yet consume the session token. Do not consider authentication production-ready.
+- Frontend Telegram sign-in and server game API integration are implemented in source. They still need a live Mini App end-to-end test against a provisioned database and deployed API. Do not consider authentication production-ready.
 - Server-side Brain Sprint session and scoring code passed backend compilation and automated tests in GitHub Actions on commit `73f07448f4203acb402a59dd2db88c54b79fd463`. It cannot run against real players until Neon is provisioned and all three migrations are applied. The current game question bank is still a prototype and should be moved out of the public repository before competitive public launch.
 - XP persistence, rate limiting, full anti-cheat controls, and live leaderboards do not exist yet.
 - GitHub Actions completed successfully on commit `1d7551a34d91537d26a745b1f4f68a05291b9cab`, including frontend type-check, backend compilation, Telegram auth tests, and frontend production build. This validates the code build, not a live Telegram/Neon deployment.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
 
 ## Next milestone
-1. Verify language switching and RTL/LTR rendering on mobile.
-2. Confirm the GitHub Actions build passes and test the app in a live browser.
-3. Select and connect a PostgreSQL provider; apply the initial player migration.
-4. Configure the Telegram bot token as a server-only secret and test signed Telegram launch data end-to-end.
-5. Verify session flows with a connected database and Telegram Mini App, then integrate frontend session handling.
-6. Connect Neon and apply migrations 001–003; exercise authenticated game start/answer flows against the live API.
-7. Move the question bank to a protected source, then connect the frontend game flow to server-issued sessions and authoritative results.
-8. Add XP persistence and leaderboards.
+1. Confirm the latest GitHub Actions run passes after frontend game integration.
+2. Create and connect the Neon project; apply migrations 001–003.
+3. Configure Telegram bot token as a server-only secret and deploy the API.
+4. Test Telegram sign-in and complete Brain Sprint rounds end-to-end.
+5. Move the question bank and answer key out of the public frontend/repository before competitive launch.
+6. Add XP persistence, player progression, and leaderboards.
+7. Verify language switching, RTL/LTR, and accessibility on real mobile devices.
