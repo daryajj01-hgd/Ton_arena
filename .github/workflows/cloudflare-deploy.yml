@@ -1,0 +1,70 @@
+name: Deploy TON ARENA to Cloudflare Workers
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "server/**"
+      - "worker/**"
+      - "db/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.ts"
+      - "tsconfig*.json"
+      - "wrangler.jsonc"
+      - ".github/workflows/cloudflare-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ton-arena-cloudflare-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build and test
+        run: npm run build
+
+      - name: Validate deployment configuration
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          HYPERDRIVE_ID: ${{ vars.HYPERDRIVE_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ] || [ -z "$HYPERDRIVE_ID" ]; then
+            echo "::error::Cloudflare setup is incomplete. Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID as GitHub Actions secrets, and HYPERDRIVE_ID as a repository variable."
+            exit 1
+          fi
+          if ! echo "$HYPERDRIVE_ID" | grep -Eq '^[a-f0-9]{32}$'; then
+            echo "::error::HYPERDRIVE_ID must be the 32-character ID shown in the Cloudflare Hyperdrive configuration."
+            exit 1
+          fi
+          sed "s/REPLACE_WITH_HYPERDRIVE_ID/$HYPERDRIVE_ID/g" wrangler.jsonc > wrangler.deploy.jsonc
+
+      - name: Deploy Worker and static assets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4 deploy --config wrangler.deploy.jsonc
+
+      - name: Remove generated config
+        if: always()
+        run: rm -f wrangler.deploy.jsonc
