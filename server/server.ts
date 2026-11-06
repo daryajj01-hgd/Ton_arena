@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { checkDatabaseConnection, upsertPlayer } from "./database.js";
 import { createPlayerSession, findPlayerBySession, revokePlayerSession } from "./sessions.js";
+import { startBrainSprint, submitBrainSprintAnswer } from "./game-sessions.js";
 import { validateTelegramInitData } from "./telegram-auth.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
@@ -152,6 +153,73 @@ const server = createServer(async (request, response) => {
       sendJson(response, 200, { ok: true, loggedOut: true });
     } catch {
       sendJson(response, 503, { ok: false, error: "SESSION_SERVICE_UNAVAILABLE" });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && request.url === "/api/games/brain-sprint/start") {
+    const authorization = request.headers.authorization ?? "";
+    const match = /^Bearer ([A-Za-z0-9_-]{40,60})$/.exec(authorization);
+    if (!match) {
+      sendJson(response, 401, { ok: false, error: "UNAUTHENTICATED" });
+      return;
+    }
+    try {
+      const player = await findPlayerBySession(match[1]);
+      if (!player) {
+        sendJson(response, 401, { ok: false, error: "SESSION_INVALID_OR_EXPIRED" });
+        return;
+      }
+      const game = await startBrainSprint(player.id);
+      sendJson(response, 201, { ok: true, game });
+    } catch {
+      sendJson(response, 503, { ok: false, error: "GAME_SERVICE_UNAVAILABLE" });
+    }
+    return;
+  }
+
+  const answerRoute = request.method === "POST"
+    ? /^\/api\/games\/brain-sprint\/([0-9a-f-]{36})\/answer$/.exec(request.url ?? "")
+    : null;
+  if (answerRoute) {
+    const authorization = request.headers.authorization ?? "";
+    const authMatch = /^Bearer ([A-Za-z0-9_-]{40,60})$/.exec(authorization);
+    if (!authMatch) {
+      sendJson(response, 401, { ok: false, error: "UNAUTHENTICATED" });
+      return;
+    }
+    try {
+      const player = await findPlayerBySession(authMatch[1]);
+      if (!player) {
+        sendJson(response, 401, { ok: false, error: "SESSION_INVALID_OR_EXPIRED" });
+        return;
+      }
+      const body = await readJsonBody(request);
+      if (
+        typeof body !== "object" ||
+        body === null ||
+        !("answerIndex" in body) ||
+        typeof body.answerIndex !== "number" ||
+        !Number.isInteger(body.answerIndex) ||
+        body.answerIndex < -1 ||
+        body.answerIndex > 3
+      ) {
+        sendJson(response, 400, { ok: false, error: "INVALID_ANSWER" });
+        return;
+      }
+      const result = await submitBrainSprintAnswer({
+        playerId: player.id,
+        sessionId: answerRoute[1],
+        answerIndex: body.answerIndex
+      });
+      const statusCode = result.status === "not_found" ? 404
+        : result.status === "expired" ? 410
+        : result.status === "completed" ? 409
+        : result.status === "invalid_question" ? 400
+        : 200;
+      sendJson(response, statusCode, { ok: result.status === "accepted", result });
+    } catch {
+      sendJson(response, 503, { ok: false, error: "GAME_SERVICE_UNAVAILABLE" });
     }
     return;
   }
