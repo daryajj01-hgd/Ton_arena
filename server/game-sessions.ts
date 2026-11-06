@@ -143,7 +143,8 @@ export async function submitBrainSprintAnswer(input: {
     const questionIndex = session.current_question_index;
     const questionId = session.question_order[questionIndex];
     if (
-      questionIndex >= BRAIN_SPRINT_QUESTION_COUNT ||\n      input.questionIndex !== questionIndex ||
+      questionIndex >= BRAIN_SPRINT_QUESTION_COUNT ||
+      input.questionIndex !== questionIndex ||
       !Number.isInteger(questionId) ||
       questionId < 0 ||
       questionId >= answerKey.length
