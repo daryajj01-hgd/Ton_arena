@@ -1,4 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { checkDatabaseConnection, upsertPlayer } from "./database.js";
 import { validateTelegramInitData } from "./telegram-auth.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
@@ -34,6 +35,16 @@ const server = createServer(async (request, response) => {
     return;
   }
 
+  if (request.method === "GET" && request.url === "/ready") {
+    try {
+      await checkDatabaseConnection();
+      sendJson(response, 200, { ok: true, service: "ton-arena-api", database: "ready" });
+    } catch {
+      sendJson(response, 503, { ok: false, error: "DATABASE_NOT_READY" });
+    }
+    return;
+  }
+
   if (request.method === "POST" && request.url === "/api/auth/telegram") {
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     if (!botToken) {
@@ -52,13 +63,29 @@ const server = createServer(async (request, response) => {
         sendJson(response, 401, { ok: false, error: "INVALID_OR_EXPIRED_TELEGRAM_DATA" });
         return;
       }
-      sendJson(response, 200, {
-        ok: true,
-        authenticated: true,
-        player: {
-          telegramId: user.id,
+      let player;
+      try {
+        player = await upsertPlayer({
+          telegramId: user.id as number,
           firstName: typeof user.first_name === "string" ? user.first_name : null,
           username: typeof user.username === "string" ? user.username : null
+        });
+      } catch (error) {
+        const code = error instanceof Error && error.message === "DATABASE_NOT_CONFIGURED"
+          ? "PLAYER_STORAGE_NOT_CONFIGURED"
+          : "PLAYER_STORAGE_UNAVAILABLE";
+        sendJson(response, 503, { ok: false, error: code });
+        return;
+      }
+
+      sendJson(response, 200, {
+        ok: true,
+        identityVerified: true,
+        player: {
+          id: player.id,
+          telegramId: player.telegram_id,
+          firstName: player.first_name,
+          username: player.username
         }
       });
     } catch (error) {
