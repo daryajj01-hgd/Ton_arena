@@ -79,10 +79,12 @@ Neon is selected as the initial PostgreSQL provider; the project is not yet prov
 - Make reward rules transparent and auditable.
 
 ### Game engine
-- Server issues a game session and question set.
+- Server issues a game session and randomized question order. The current server API is `POST /api/games/brain-sprint/start`.
+- The frontend submits answers to `POST /api/games/brain-sprint/:sessionId/answer`; the server owns timing, answer validation, and score updates.
 - Server validates submitted answers and timing.
 - Score calculation happens server-side.
-- Store enough session data to investigate disputes and suspicious activity.
+- Store per-question answer, correctness, response time, and timestamps to support basic review.
+- The initial question bank is a prototype; because the repository is public, answer-key source must be moved to a protected configuration/data store before a serious competitive release.
 
 ### Leaderboards
 - Start with all-time and daily rankings.
@@ -100,7 +102,7 @@ The repository now contains an initial Node.js HTTP API in `server/server.ts`:
 - The bot token is read only from the server environment variable `TELEGRAM_BOT_TOKEN`; it must never be placed in frontend code or committed to Git.
 - The frontend loads Telegram's official Web App bridge, reads `window.Telegram.WebApp.initData`, authenticates against the API, then verifies the returned bearer session through `/api/me`. It keeps the session token in React memory rather than localStorage/sessionStorage.
 - Set `VITE_API_BASE_URL` only when the API is hosted on a different origin; otherwise the frontend calls the same-origin `/api` paths.
-- The signature and freshness checks are isolated in `server/telegram-auth.ts` and covered by automated Node.js tests for valid data, modified fields, expired/future timestamps, invalid user IDs, and invalid signatures. The API now includes `server/database.ts`, which uses a PostgreSQL connection pool and upserts a player by unique Telegram ID. The initial schema is in `db/migrations/001_create_players.sql`. `GET /ready` checks database connectivity; `/health` remains a liveness endpoint. These pieces are committed but are not live until a provider is connected and the migration is applied. The API now issues and validates revocable sessions, but browser-side session integration, rate limiting, deployment-level HTTPS/origin policy, and end-to-end tests are still required before public use.
+- The signature and freshness checks are isolated in `server/telegram-auth.ts` and covered by automated Node.js tests for valid data, modified fields, expired/future timestamps, invalid user IDs, and invalid signatures. The API now includes `server/database.ts`, which uses a PostgreSQL connection pool and upserts a player by unique Telegram ID. The initial schema is in `db/migrations/001_create_players.sql`. `GET /ready` checks database connectivity; `/health` remains a liveness endpoint. These pieces are committed but are not live until a provider is connected and the migration is applied. The API now issues and validates revocable sessions, and the frontend authenticates Telegram Mini App launches. Brain Sprint start/answer routes and server-side scoring are implemented. Live database integration, rate limiting, deployment-level HTTPS/origin policy, and end-to-end tests are still required before public use.
 
 Before public use, add rate limiting, deployment-level HTTPS/origin policy, structured logging, browser-side session handling, and end-to-end tests. The CI workflow now runs frontend type-checking, backend compilation, these authentication tests, and the frontend production build as separate steps.
 
