@@ -102,3 +102,19 @@ export async function getPlayerProgress(sessionToken: string): Promise<{ ok: tru
     headers: { authorization: `Bearer ${sessionToken}` }
   });
 }
+
+export type LeaderboardEntry = {
+  rank: number;
+  displayName: string;
+  xp: number;
+  level: number;
+  gamesPlayed: number;
+  bestScore: number;
+};
+
+export async function getLeaderboard(sessionToken: string): Promise<{ ok: true; leaderboard: LeaderboardEntry[] }> {
+  return apiRequest<{ ok: true; leaderboard: LeaderboardEntry[] }>("/api/leaderboard", {
+    method: "GET",
+    headers: { authorization: `Bearer ${sessionToken}` }
+  });
+}
