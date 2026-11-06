@@ -28,7 +28,7 @@ export function getDatabasePool(): Pool {
   });
 
   pool.on("error", (error: Error) => {
-    process.stderr.write(`Unexpected database pool error: ${error.message}\n`);
+    console.error("Unexpected database pool error:", error.message);
   });
 
   return pool;
