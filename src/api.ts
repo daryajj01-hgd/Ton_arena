@@ -75,6 +75,7 @@ export type BrainSprintAnswer = {
 export async function submitBrainSprintAnswer(
   sessionToken: string,
   sessionId: string,
+  questionIndex: number,
   answerIndex: number
 ): Promise<{ ok: true; result: BrainSprintAnswer }> {
   return apiRequest<{ ok: true; result: BrainSprintAnswer }>(
@@ -82,7 +83,7 @@ export async function submitBrainSprintAnswer(
     {
       method: "POST",
       headers: { authorization: `Bearer ${sessionToken}` },
-      body: JSON.stringify({ answerIndex })
+      body: JSON.stringify({ questionIndex, answerIndex })
     }
   );
 }
