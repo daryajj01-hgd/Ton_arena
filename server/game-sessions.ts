@@ -261,3 +261,52 @@ export async function getPlayerProgress(playerId: string): Promise<PlayerProgres
     bestScore: row?.best_score ?? 0
   };
 }
+
+export type LeaderboardEntry = {
+  rank: number;
+  displayName: string;
+  xp: number;
+  level: number;
+  gamesPlayed: number;
+  bestScore: number;
+};
+
+export async function getLeaderboard(limit = 10): Promise<LeaderboardEntry[]> {
+  const safeLimit = Math.min(20, Math.max(1, Math.floor(limit)));
+  const result = await getDatabasePool().query<{
+    rank: number;
+    display_name: string;
+    xp: number;
+    games_played: number;
+    best_score: number;
+  }>(
+    `SELECT
+       ROW_NUMBER() OVER (
+         ORDER BY progress.xp DESC,
+                  progress.best_score DESC,
+                  progress.games_played DESC,
+                  progress.last_game_completed_at ASC
+       )::int AS rank,
+       COALESCE(NULLIF(BTRIM(players.first_name), ''), 'Arena Player') AS display_name,
+       progress.xp,
+       progress.games_played,
+       progress.best_score
+     FROM player_progress AS progress
+     INNER JOIN players ON players.id = progress.player_id
+     ORDER BY progress.xp DESC,
+              progress.best_score DESC,
+              progress.games_played DESC,
+              progress.last_game_completed_at ASC
+     LIMIT $1`,
+    [safeLimit]
+  );
+
+  return result.rows.map((row) => ({
+    rank: row.rank,
+    displayName: row.display_name,
+    xp: row.xp,
+    level: getPlayerLevelFromXp(row.xp),
+    gamesPlayed: row.games_played,
+    bestScore: row.best_score
+  }));
+}
