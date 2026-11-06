@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { localeOptions, translations, type Locale } from "./i18n";
 import { authenticateTelegram, getCurrentPlayer, startBrainSprint, submitBrainSprintAnswer } from "./api";
 
@@ -16,7 +16,6 @@ export default function App() {
   const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
-  const [answers, setAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(QUESTION_SECONDS);
   const [playerName, setPlayerName] = useState<string | null>(null);
@@ -36,11 +35,7 @@ export default function App() {
   const locale = localeOptions.find((item) => item.code === language)!;
   const questions = t.questions;
   const currentQuestion = questions[questionOrder[index] ?? index];
-  const localScore = useMemo(
-    () => answers.reduce((total, answer, i) => total + (answer === questions[questionOrder[i] ?? i]?.correct ? 1 : 0), 0),
-    [answers, questions, questionOrder]
-  );
-  const score = serverGame ? serverScore : localScore;
+  const score = serverScore;
 
   useEffect(() => {
     const webApp = window.Telegram?.WebApp;
@@ -84,7 +79,6 @@ export default function App() {
         setServerCorrectAnswer(null);
       }
       setSelected(answer);
-      setAnswers((current) => [...current, answer]);
     } catch {
       setGameError("Your answer could not be saved. Please try again.");
       setTimeLeft(QUESTION_SECONDS);
@@ -111,7 +105,6 @@ export default function App() {
     setGameError(null);
     setIndex(0);
     setSelected(null);
-    setAnswers([]);
     setFinished(false);
     setTimeLeft(QUESTION_SECONDS);
     setServerScore(0);
@@ -260,7 +253,7 @@ export default function App() {
           {gameError && <p className="game-error" role="alert">{gameError}</p>}
           {selected !== null && (
             <div className="feedback">
-              <strong>{selected === -1 ? t.timeUp : (serverGame ? serverCorrect : selected === currentQuestion.correct) ? t.correct : t.incorrect}</strong>
+              <strong>{selected === -1 ? t.timeUp : serverGame ? (serverCorrect ? t.correct : t.incorrect) : "Preview mode"}</strong>
               <p>{currentQuestion.note}</p>
               <button className="primary-btn" onClick={next}>{index === 9 ? t.results : t.next} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
             </div>
