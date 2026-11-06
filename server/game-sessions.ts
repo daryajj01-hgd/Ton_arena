@@ -301,8 +301,11 @@ export async function getPlayerProgress(playerId: string): Promise<PlayerProgres
     games_played: number;
     total_correct: number;
     best_score: number;
+    daily_streak: number;
+    daily_mission_complete_today: boolean;
   }>(
-    `SELECT xp, games_played, total_correct, best_score
+    `SELECT xp, games_played, total_correct, best_score, daily_streak,
+            (last_daily_bonus_date = (NOW() AT TIME ZONE 'UTC')::date) AS daily_mission_complete_today
      FROM player_progress
      WHERE player_id = $1`,
     [playerId]
@@ -314,7 +317,9 @@ export async function getPlayerProgress(playerId: string): Promise<PlayerProgres
     level: getPlayerLevelFromXp(xp),
     gamesPlayed: row?.games_played ?? 0,
     totalCorrect: row?.total_correct ?? 0,
-    bestScore: row?.best_score ?? 0
+    bestScore: row?.best_score ?? 0,
+    dailyStreak: row?.daily_streak ?? 0,
+    dailyMissionCompleteToday: row?.daily_mission_complete_today ?? false
   };
 }
 
