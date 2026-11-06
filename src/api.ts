@@ -44,3 +44,42 @@ export async function getCurrentPlayer(sessionToken: string): Promise<PlayerResp
     headers: { authorization: `Bearer ${sessionToken}` }
   });
 }
+
+export type BrainSprintGame = {
+  sessionId: string;
+  questionOrder: number[];
+  expiresAt: string;
+};
+
+export async function startBrainSprint(sessionToken: string): Promise<{ ok: true; game: BrainSprintGame }> {
+  return apiRequest<{ ok: true; game: BrainSprintGame }>("/api/games/brain-sprint/start", {
+    method: "POST",
+    headers: { authorization: `Bearer ${sessionToken}` },
+    body: JSON.stringify({})
+  });
+}
+
+export type BrainSprintAnswer = {
+  status: "accepted";
+  isCorrect: boolean;
+  correctAnswerIndex: number;
+  score: number;
+  answeredQuestionIndex: number;
+  completed: boolean;
+  nextQuestionIndex: number;
+};
+
+export async function submitBrainSprintAnswer(
+  sessionToken: string,
+  sessionId: string,
+  answerIndex: number
+): Promise<{ ok: true; result: BrainSprintAnswer }> {
+  return apiRequest<{ ok: true; result: BrainSprintAnswer }>(
+    `/api/games/brain-sprint/${sessionId}/answer`,
+    {
+      method: "POST",
+      headers: { authorization: `Bearer ${sessionToken}` },
+      body: JSON.stringify({ answerIndex })
+    }
+  );
+}
