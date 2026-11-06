@@ -24,7 +24,8 @@ export async function startBrainSprint(playerId: string): Promise<{
   questionOrder: number[];
   expiresAt: string;
 }> {
-  getBrainSprintAnswerKey(); // Fail closed if the server-only answer key is not configured.\n  const questionOrder = createBrainSprintQuestionOrder();
+  getBrainSprintAnswerKey(); // Fail closed if the server-only answer key is not configured.
+  const questionOrder = createBrainSprintQuestionOrder();
   const expiresAt = new Date(Date.now() + BRAIN_SPRINT_SESSION_SECONDS * 1000);
   const result = await getDatabasePool().query<{ id: string }>(
     `INSERT INTO game_sessions (player_id, game_code, question_order, expires_at)
@@ -58,7 +59,8 @@ export async function submitBrainSprintAnswer(input: {
     return { status: "invalid_question" };
   }
 
-  const answerKey = getBrainSprintAnswerKey();\n  const pool = getDatabasePool();
+  const answerKey = getBrainSprintAnswerKey();
+  const pool = getDatabasePool();
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
