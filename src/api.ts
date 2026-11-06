@@ -70,6 +70,8 @@ export type BrainSprintAnswer = {
   xpEarned: number;
   totalXp: number | null;
   level: number | null;
+  dailyStreak: number | null;
+  dailyMissionCompleteToday: boolean;
 };
 
 export async function submitBrainSprintAnswer(
@@ -94,6 +96,8 @@ export type PlayerProgress = {
   gamesPlayed: number;
   totalCorrect: number;
   bestScore: number;
+  dailyStreak: number;
+  dailyMissionCompleteToday: boolean;
 };
 
 export async function getPlayerProgress(sessionToken: string): Promise<{ ok: true; progress: PlayerProgress }> {
