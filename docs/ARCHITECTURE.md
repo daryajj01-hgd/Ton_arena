@@ -93,11 +93,14 @@ Neon is selected as the initial PostgreSQL provider; the project is not yet prov
 
 The repository now contains an initial Node.js HTTP API in `server/server.ts`:
 - `GET /health` returns a basic service health response.
-- `POST /api/auth/telegram` accepts Telegram Mini App `initData`, validates the HMAC signature with the bot token, checks the `auth_date` freshness window, and returns a minimal authenticated player identity.
+- `POST /api/auth/telegram` accepts Telegram Mini App `initData`, validates the HMAC signature with the bot token, checks the `auth_date` freshness window, upserts the player, and issues a seven-day opaque bearer session.
+- Session tokens are generated with cryptographic randomness; only their SHA-256 hashes are stored in PostgreSQL.
+- `GET /api/me` validates the bearer session and returns the authenticated player profile.
+- `POST /api/auth/logout` revokes the supplied session.
 - The bot token is read only from the server environment variable `TELEGRAM_BOT_TOKEN`; it must never be placed in frontend code or committed to Git.
-- The signature and freshness checks are isolated in `server/telegram-auth.ts` and covered by automated Node.js tests for valid data, modified fields, expired/future timestamps, invalid user IDs, and invalid signatures. The API now includes `server/database.ts`, which uses a PostgreSQL connection pool and upserts a player by unique Telegram ID. The initial schema is in `db/migrations/001_create_players.sql`. `GET /ready` checks database connectivity; `/health` remains a liveness endpoint. These pieces are committed but are not live until a provider is connected and the migration is applied. The API still does not issue a session cookie/token, so identity verification is not yet a complete login/session system.
+- The signature and freshness checks are isolated in `server/telegram-auth.ts` and covered by automated Node.js tests for valid data, modified fields, expired/future timestamps, invalid user IDs, and invalid signatures. The API now includes `server/database.ts`, which uses a PostgreSQL connection pool and upserts a player by unique Telegram ID. The initial schema is in `db/migrations/001_create_players.sql`. `GET /ready` checks database connectivity; `/health` remains a liveness endpoint. These pieces are committed but are not live until a provider is connected and the migration is applied. The API now issues and validates revocable sessions, but browser-side session integration, rate limiting, deployment-level HTTPS/origin policy, and end-to-end tests are still required before public use.
 
-Before public use, add a secure session strategy, origin/CSRF protections appropriate to the deployment, rate limiting, structured logging, and persistent player records. The CI workflow now runs frontend type-checking, backend compilation, these authentication tests, and the frontend production build as separate steps.
+Before public use, add rate limiting, deployment-level HTTPS/origin policy, structured logging, browser-side session handling, and end-to-end tests. The CI workflow now runs frontend type-checking, backend compilation, these authentication tests, and the frontend production build as separate steps.
 
 ## 6. MVP scope
 
