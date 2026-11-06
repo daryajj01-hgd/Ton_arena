@@ -175,3 +175,34 @@ export async function submitBrainSprintAnswer(input: {
     client.release();
   }
 }
+
+export type PlayerProgress = {
+  xp: number;
+  level: number;
+  gamesPlayed: number;
+  totalCorrect: number;
+  bestScore: number;
+};
+
+export async function getPlayerProgress(playerId: string): Promise<PlayerProgress> {
+  const result = await getDatabasePool().query<{
+    xp: number;
+    games_played: number;
+    total_correct: number;
+    best_score: number;
+  }>(
+    `SELECT xp, games_played, total_correct, best_score
+     FROM player_progress
+     WHERE player_id = $1`,
+    [playerId]
+  );
+  const row = result.rows[0];
+  const xp = row?.xp ?? 0;
+  return {
+    xp,
+    level: Math.floor(xp / 100) + 1,
+    gamesPlayed: row?.games_played ?? 0,
+    totalCorrect: row?.total_correct ?? 0,
+    bestScore: row?.best_score ?? 0
+  };
+}
