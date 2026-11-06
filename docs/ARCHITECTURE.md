@@ -89,7 +89,17 @@ These are recommendations, not irreversible decisions. Choose providers only aft
 - Define tie-breaking rules before launch.
 - Protect leaderboard endpoints against scraping and abuse where practical.
 
-## 5. MVP scope
+## 5. Initial API foundation
+
+The repository now contains an initial Node.js HTTP API in `server/server.ts`:
+- `GET /health` returns a basic service health response.
+- `POST /api/auth/telegram` accepts Telegram Mini App `initData`, validates the HMAC signature with the bot token, checks the `auth_date` freshness window, and returns a minimal authenticated player identity.
+- The bot token is read only from the server environment variable `TELEGRAM_BOT_TOKEN`; it must never be placed in frontend code or committed to Git.
+- The endpoint does not yet persist players, issue a session cookie/token, or connect to a database. It is a foundation, not production-ready authentication.
+
+Before public use, add a secure session strategy, origin/CSRF protections appropriate to the deployment, rate limiting, structured logging, persistent player records, and tests for valid, invalid, modified, and expired Telegram payloads.
+
+## 6. MVP scope
 
 Build only:
 1. Telegram launch and server-side identity validation.
@@ -103,7 +113,7 @@ Build only:
 
 Do not build clubs, a token, NFTs, a marketplace, paid tournaments, or complex AI features in the first MVP.
 
-## 6. Security and trust baseline
+## 7. Security and trust baseline
 
 - Keep secrets in cloud environment variables, never in Git.
 - Validate Telegram init data on the backend.
@@ -115,7 +125,7 @@ Do not build clubs, a token, NFTs, a marketplace, paid tournaments, or complex A
 - Do not hold user funds in the MVP.
 - Review Telegram platform policies before enabling payments or blockchain flows.
 
-## 7. Future integrations
+## 8. Future integrations
 
 ### TON Connect
 Consider only after the free core loop has retention. Wallet connection must be optional unless a specific feature truly requires it. Never ask users to share seed phrases or private keys.
@@ -126,7 +136,7 @@ Digital goods/services inside Telegram Mini Apps must follow Telegram's current 
 ### Academy and Club
 Reuse identity, progression, missions, and moderation foundations. Add separate domain modules rather than creating separate accounts or isolated databases.
 
-## 8. Decisions still required
+## 9. Decisions still required
 
 - Hosting and database provider.
 - Frontend/backend deployment arrangement.
