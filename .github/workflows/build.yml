@@ -30,6 +30,9 @@ jobs:
       - name: Compile TypeScript backend
         run: npm run build:server
 
+      - name: Type-check Cloudflare Worker
+        run: npm run typecheck:worker
+
       - name: Test Telegram authentication
         run: npm test
 
