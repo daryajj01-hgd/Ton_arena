@@ -54,6 +54,8 @@ export type BrainSprintAnswerResult =
       xpEarned: number;
       totalXp: number | null;
       level: number | null;
+      dailyStreak: number | null;
+      dailyMissionCompleteToday: boolean;
     };
 
 export async function submitBrainSprintAnswer(input: {
@@ -112,12 +114,14 @@ export async function submitBrainSprintAnswer(input: {
       const completed = session.status === "completed" && input.questionIndex === BRAIN_SPRINT_QUESTION_COUNT - 1;
       let totalXp: number | null = null;
       let level: number | null = null;
+      let dailyStreak: number | null = null;
       if (completed) {
-        const progressResult = await client.query<{ xp: number }>(
-          "SELECT xp FROM player_progress WHERE player_id = $1",
+        const progressResult = await client.query<{ xp: number; daily_streak: number }>(
+          "SELECT xp, daily_streak FROM player_progress WHERE player_id = $1",
           [input.playerId]
         );
         totalXp = progressResult.rows[0]?.xp ?? 0;
+        dailyStreak = progressResult.rows[0]?.daily_streak ?? 0;
         level = getPlayerLevelFromXp(totalXp);
       }
       await client.query("COMMIT");
@@ -131,7 +135,9 @@ export async function submitBrainSprintAnswer(input: {
         nextQuestionIndex: input.questionIndex + 1,
         xpEarned: completed ? session.xp_awarded : 0,
         totalXp,
-        level
+        level,
+        dailyStreak,
+        dailyMissionCompleteToday: completed
       };
     }
     if (session.status === "completed" || input.questionIndex !== session.current_question_index) {
@@ -175,26 +181,74 @@ export async function submitBrainSprintAnswer(input: {
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [input.sessionId, questionIndex, questionId, acceptedAnswer, isCorrect, responseMs]
     );
-    const xpEarned = completed ? calculateBrainSprintXp(newScore) : 0;
+    const baseXp = completed ? calculateBrainSprintXp(newScore) : 0;
+    let xpEarned = 0;
     let totalXp: number | null = null;
     let level: number | null = null;
+    let dailyStreak: number | null = null;
 
     if (completed) {
-      const progressResult = await client.query<{ xp: number }>(
-        `INSERT INTO player_progress
-         (player_id, xp, games_played, total_correct, best_score, last_game_completed_at)
-         VALUES ($1, $2, 1, $3, $3, NOW())
-         ON CONFLICT (player_id) DO UPDATE SET
-           xp = player_progress.xp + EXCLUDED.xp,
-           games_played = player_progress.games_played + 1,
-           total_correct = player_progress.total_correct + EXCLUDED.total_correct,
-           best_score = GREATEST(player_progress.best_score, EXCLUDED.best_score),
-           last_game_completed_at = NOW(),
-           updated_at = NOW()
-         RETURNING xp`,
-        [input.playerId, xpEarned, newScore]
+      // Serialize completions for this player so two simultaneous rounds cannot claim the daily bonus twice.
+      await client.query("SELECT id FROM players WHERE id = $1 FOR UPDATE", [input.playerId]);
+      const dateResult = await client.query<{ today: string; yesterday: string }>(
+        `SELECT
+           TO_CHAR((NOW() AT TIME ZONE 'UTC')::date, 'YYYY-MM-DD') AS today,
+           TO_CHAR((NOW() AT TIME ZONE 'UTC')::date - 1, 'YYYY-MM-DD') AS yesterday`
       );
-      totalXp = progressResult.rows[0]?.xp ?? xpEarned;
+      const today = dateResult.rows[0]?.today;
+      const yesterday = dateResult.rows[0]?.yesterday;
+      if (!today || !yesterday) throw new Error("DAILY_MISSION_DATE_UNAVAILABLE");
+
+      const existingProgress = await client.query<{
+        xp: number;
+        games_played: number;
+        total_correct: number;
+        best_score: number;
+        daily_streak: number;
+        last_daily_bonus_date: string | null;
+      }>(
+        `SELECT xp, games_played, total_correct, best_score,
+                daily_streak, last_daily_bonus_date
+         FROM player_progress
+         WHERE player_id = $1
+         FOR UPDATE`,
+        [input.playerId]
+      );
+      const previous = existingProgress.rows[0];
+      const dailyBonus = previous?.last_daily_bonus_date === today ? 0 : 20;
+      dailyStreak = !previous ? 1
+        : previous.last_daily_bonus_date === today ? previous.daily_streak
+        : previous.last_daily_bonus_date === yesterday ? previous.daily_streak + 1
+        : 1;
+      xpEarned = baseXp + dailyBonus;
+
+      if (previous) {
+        const progressResult = await client.query<{ xp: number }>(
+          `UPDATE player_progress
+           SET xp = xp + $2,
+               games_played = games_played + 1,
+               total_correct = total_correct + $3,
+               best_score = GREATEST(best_score, $3),
+               last_game_completed_at = NOW(),
+               daily_streak = $4,
+               last_daily_bonus_date = $5,
+               updated_at = NOW()
+           WHERE player_id = $1
+           RETURNING xp`,
+          [input.playerId, xpEarned, newScore, dailyStreak, today]
+        );
+        totalXp = progressResult.rows[0]?.xp ?? xpEarned;
+      } else {
+        const progressResult = await client.query<{ xp: number }>(
+          `INSERT INTO player_progress
+           (player_id, xp, games_played, total_correct, best_score,
+            last_game_completed_at, daily_streak, last_daily_bonus_date)
+           VALUES ($1, $2, 1, $3, $3, NOW(), $4, $5)
+           RETURNING xp`,
+          [input.playerId, xpEarned, newScore, dailyStreak, today]
+        );
+        totalXp = progressResult.rows[0]?.xp ?? xpEarned;
+      }
       level = getPlayerLevelFromXp(totalXp);
     }
 
@@ -221,7 +275,9 @@ export async function submitBrainSprintAnswer(input: {
       nextQuestionIndex,
       xpEarned,
       totalXp,
-      level
+      level,
+      dailyStreak,
+      dailyMissionCompleteToday: completed
     };
   } catch (error) {
     await client.query("ROLLBACK");
