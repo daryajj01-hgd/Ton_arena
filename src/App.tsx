@@ -81,7 +81,7 @@ export default function App() {
     setGameError(null);
     try {
       if (serverGame && sessionToken && gameSessionId) {
-        const response = await submitBrainSprintAnswer(sessionToken, gameSessionId, answer);
+        const response = await submitBrainSprintAnswer(sessionToken, gameSessionId, index, answer);
         setServerScore(response.result.score);
         setServerCorrect(response.result.isCorrect);
         setServerCorrectAnswer(response.result.correctAnswerIndex);
@@ -106,7 +106,7 @@ export default function App() {
     } finally {
       setApiBusy(false);
     }
-  }, [selected, apiBusy, serverGame, sessionToken, gameSessionId]);
+  }, [selected, apiBusy, serverGame, sessionToken, gameSessionId, index]);
 
   useEffect(() => {
     if (!started || finished || selected !== null || apiBusy) return;
