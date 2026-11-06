@@ -21,7 +21,7 @@
 
 ## Environment variables
 
-See [`.env.example`](../.env.example) for names and placeholder formats. Never commit a real `.env` file, database URL, or bot token.
+See [`.env.example`](../.env.example) for names and placeholder formats. Set `VITE_API_BASE_URL` only if the frontend and API are hosted on different origins; otherwise leave it blank. Never commit a real `.env` file, database URL, or bot token.
 
 ## Database behavior
 
