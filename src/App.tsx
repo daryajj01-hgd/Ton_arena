@@ -240,8 +240,8 @@ export default function App() {
           <div className="answers">
             {currentQuestion.answers.map((answer, i) => {
               const isChosen = selected === i;
-              const correctIndex = serverGame && serverCorrectAnswer !== null ? serverCorrectAnswer : currentQuestion.correct;
-              const isCorrect = selected !== null && i === correctIndex;
+              const correctIndex = serverCorrectAnswer ?? -1;
+              const isCorrect = selected !== null && serverGame && i === correctIndex;
               return (
                 <button key={answer} className={`answer-btn ${isCorrect ? "correct" : ""} ${isChosen && !isCorrect ? "wrong" : ""}`} onClick={() => choose(i)} disabled={selected !== null || apiBusy}>
                   <span className="answer-letter">{["A", "B", "C", "D"][i]}</span>
