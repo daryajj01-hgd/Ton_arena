@@ -30,9 +30,10 @@ test("accepts correctly signed, recent Telegram initData", () => {
 });
 
 test("rejects initData whose signed fields were modified", () => {
-  const initData = signedInitData({ id: 987654321, first_name: "Test" })
-    .replace("first_name%22%3A%22Test", "first_name%22%3A%22Other");
-  assert.equal(validateTelegramInitData(initData, botToken, nowSeconds), null);
+  const original = signedInitData({ id: 987654321, first_name: "Test" });
+  const modified = original.replace("first_name%22%3A%22Test", "first_name%22%3A%22Other");
+  assert.notEqual(modified, original);
+  assert.equal(validateTelegramInitData(modified, botToken, nowSeconds), null);
 });
 
 test("rejects expired authentication data", () => {
@@ -51,6 +52,9 @@ test("rejects a signed payload with an invalid Telegram user id", () => {
 });
 
 test("rejects an invalid signature", () => {
-  const initData = signedInitData({ id: 987654321 }).replace(/hash=[a-f0-9]/, "hash=0");
+  const initData = signedInitData({ id: 987654321 }).replace(
+    /hash=([a-f0-9])/,
+    (_match, first) => `hash=${first === "0" ? "1" : "0"}`
+  );
   assert.equal(validateTelegramInitData(initData, botToken, nowSeconds), null);
 });
