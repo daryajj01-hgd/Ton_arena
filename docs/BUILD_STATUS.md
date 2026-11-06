@@ -19,6 +19,9 @@
 - [x] Neon selected as the initial managed PostgreSQL provider; setup and secret-handling guide added.
 - [x] Repeatable database migration runner and `npm run db:migrate` command.
 - [x] `.env.example` documents required server-only environment variable names without real credentials.
+- [x] Opaque seven-day player sessions with cryptographically random tokens and hashed database storage.
+- [x] Authenticated profile endpoint (`GET /api/me`) and session revocation endpoint (`POST /api/auth/logout`).
+- [x] Second repeatable SQL migration for player sessions; migration runner applies both schema files.
 - [x] CI runs frontend type-checking, backend compilation, Telegram authentication tests, and frontend production build as separate steps.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
 
@@ -29,7 +32,7 @@
 - The 11-language foundation is extensible; it does not mean every world language has been added.
 - Answers, countdown, and score are handled in the browser only.
 - Neon has been selected, but no Neon project/account has been created or connected and the migration has not been applied. Player persistence is therefore not live yet.
-- The API does not yet issue secure player sessions; Telegram identity verification is not yet a complete login/session system.
+- Session endpoints are implemented in the API, but they are not yet deployed or end-to-end tested. The frontend does not yet consume the session token. Do not consider authentication production-ready.
 - No database, server-side game sessions/scoring, anti-cheat system, XP persistence, or live leaderboard exists yet.
 - The production build, backend compilation, and authentication tests have not yet been confirmed by a completed GitHub Actions run. CI has separate steps so a failing stage is identifiable.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
@@ -39,4 +42,5 @@
 2. Confirm the GitHub Actions build passes and test the app in a live browser.
 3. Select and connect a PostgreSQL provider; apply the initial player migration.
 4. Configure the Telegram bot token as a server-only secret and test signed Telegram launch data end-to-end.
-5. Add secure player sessions, then server-side game sessions/scoring.
+5. Verify session flows with a connected database and Telegram Mini App, then integrate frontend session handling.
+6. Add server-issued game sessions and server-side scoring.
