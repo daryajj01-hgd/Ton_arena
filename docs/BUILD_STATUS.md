@@ -10,6 +10,9 @@
 - [x] Localized BRAIN SPRINT interface, questions, answers, and explanations in all 11 initial languages.
 - [x] Automatic left-to-right and right-to-left layout direction.
 - [x] 15-second countdown, timeout handling, answer feedback, and local score screen.
+- [x] Initial Node.js API skeleton with health endpoint.
+- [x] Server-side Telegram Mini App initData signature and freshness validation endpoint.
+- [x] Automated GitHub Actions production-build workflow.
 
 ## Important limitations
 - This is a frontend prototype only.
@@ -17,11 +20,13 @@
 - Translations are initial product copy and should receive native-speaker review before public launch.
 - The 11-language foundation is extensible; it does not mean every world language has been added.
 - Answers, countdown, and score are handled in the browser only.
-- No backend, persistent accounts, Telegram authentication, database, anti-cheat validation, XP persistence, or live leaderboard exists yet.
-- No production build has been run and verified.
+- The API currently validates Telegram initData but does not yet create persistent accounts or server sessions.
+- No database, server-side game sessions/scoring, anti-cheat system, XP persistence, or live leaderboard exists yet.
+- The production build has not yet been confirmed by a completed GitHub Actions run.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
 
 ## Next milestone
 1. Verify language switching and RTL/LTR rendering on mobile.
-2. Test saved language preference and prepare translation QA workflow.
-3. Implement backend and server-side Telegram Mini App authentication before trusting player identity or scores.
+2. Confirm the GitHub Actions build passes and test the app in a live browser.
+3. Connect the Telegram bot token as a server-only secret and test signed Telegram launch data.
+4. Add persistent player storage and server-side game sessions/scoring.
