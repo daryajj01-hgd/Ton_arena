@@ -1,23 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-
-type Question = { prompt: string; answers: string[]; correct: number; note: string };
+import { localeOptions, translations, type Locale } from "./i18n";
 
 const QUESTION_SECONDS = 15;
 
-const questions: Question[] = [
-  { prompt: "Which planet is known as the Red Planet?", answers: ["Venus", "Mars", "Jupiter", "Mercury"], correct: 1, note: "Iron oxide on the surface gives Mars its reddish appearance." },
-  { prompt: "What is the largest ocean on Earth?", answers: ["Atlantic", "Indian", "Pacific", "Arctic"], correct: 2, note: "The Pacific is Earth's largest and deepest ocean." },
-  { prompt: "What is 12 multiplied by 8?", answers: ["86", "92", "96", "108"], correct: 2, note: "12 × 8 = 96." },
-  { prompt: "Which chemical element has the symbol O?", answers: ["Gold", "Oxygen", "Iron", "Silver"], correct: 1, note: "The symbol O stands for oxygen." },
-  { prompt: "What is the capital of Japan?", answers: ["Kyoto", "Osaka", "Tokyo", "Hiroshima"], correct: 2, note: "Tokyo is the capital of Japan." },
-  { prompt: "Which of these mammals lays eggs?", answers: ["Bat", "Platypus", "Dolphin", "Kangaroo"], correct: 1, note: "The platypus is one of the few egg-laying mammals." },
-  { prompt: "How many meters are in one kilometer?", answers: ["100", "500", "1,000", "10,000"], correct: 2, note: "One kilometer is equal to 1,000 meters." },
-  { prompt: "Which gas makes up most of Earth's atmosphere?", answers: ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"], correct: 2, note: "About 78% of Earth's atmosphere is nitrogen." },
-  { prompt: "Which continent has the largest population?", answers: ["Africa", "Europe", "Asia", "South America"], correct: 2, note: "Asia is the world's most populous continent." },
-  { prompt: "About how long does sunlight take to reach Earth?", answers: ["2 minutes", "8 minutes", "20 minutes", "60 minutes"], correct: 1, note: "Sunlight takes about 8 minutes and 20 seconds to reach Earth." }
-];
-
 export default function App() {
+  const [language, setLanguage] = useState<Locale>("en");
   const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -25,10 +12,18 @@ export default function App() {
   const [finished, setFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(QUESTION_SECONDS);
 
+  const t = translations[language];
+  const locale = localeOptions.find((item) => item.code === language)!;
+  const questions = t.questions;
   const score = useMemo(
-    () => answers.reduce((total, answer, i) => total + (answer === questions[i].correct ? 1 : 0), 0),
-    [answers]
+    () => answers.reduce((total, answer, i) => total + (answer === questions[i]?.correct ? 1 : 0), 0),
+    [answers, questions]
   );
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+    document.documentElement.dir = locale.dir;
+  }, [language, locale.dir]);
 
   useEffect(() => {
     if (!started || finished || selected !== null) return;
@@ -66,72 +61,77 @@ export default function App() {
     setTimeLeft(QUESTION_SECONDS);
   };
 
+  const changeLanguage = (value: string) => {
+    setLanguage(value as Locale);
+    reset();
+  };
+
   return (
-    <main className="shell">
+    <main className="shell" dir={locale.dir}>
       <header className="topbar">
         <a className="brand" href="#" onClick={(event) => { event.preventDefault(); reset(); }}>
           <span className="brand-mark">T</span>
           <span>TON <b>ARENA</b></span>
         </a>
-        <span className="top-tag">BETA VERSION</span>
+        <div className="header-actions">
+          <select className="language-select" aria-label="Choose language" value={language} onChange={(event) => changeLanguage(event.target.value)}>
+            {localeOptions.map((item) => <option key={item.code} value={item.code}>{item.label}</option>)}
+          </select>
+          <span className="top-tag">{t.beta}</span>
+        </div>
       </header>
 
       {!started ? (
         <section className="hero">
-          <div className="eyebrow"><span className="live-dot" /> PLAY · LEARN · LEVEL UP</div>
-          <h1>Competition starts <span>here.</span></h1>
-          <p className="intro">Welcome to TON ARENA — a place to test your skills, learn something new, and enjoy friendly competition.</p>
+          <div className="eyebrow"><span className="live-dot" /> {t.tagline}</div>
+          <h1>{t.headline} <span>{t.headlineAccent}</span></h1>
+          <p className="intro">{t.intro}</p>
           <div className="game-card">
             <div className="game-icon">⚡</div>
             <div className="game-copy">
-              <span className="card-kicker">FEATURED GAME</span>
+              <span className="card-kicker">{t.featured}</span>
               <h2>BRAIN SPRINT</h2>
-              <p>10 questions · 15 seconds per question</p>
+              <p>{t.gameMeta}</p>
             </div>
-            <span className="free-pill">FREE</span>
+            <span className="free-pill">{t.free}</span>
           </div>
-          <button className="primary-btn" onClick={() => { setStarted(true); setTimeLeft(QUESTION_SECONDS); }}>Start Challenge <span>→</span></button>
-          <p className="fine-print">No betting or entry fees — just skill and learning.</p>
+          <button className="primary-btn" onClick={() => { setStarted(true); setTimeLeft(QUESTION_SECONDS); }}>{t.start} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
+          <p className="fine-print">{t.noBetting}</p>
           <div className="feature-row">
-            <div><strong>10</strong><span>Questions</span></div>
-            <div><strong>15</strong><span>Seconds each</span></div>
-            <div><strong>0</strong><span>Entry fee</span></div>
+            <div><strong>10</strong><span>{t.questionsLabel}</span></div>
+            <div><strong>15</strong><span>{t.secondsEach}</span></div>
+            <div><strong>0</strong><span>{t.entryFee}</span></div>
           </div>
         </section>
       ) : finished ? (
         <section className="quiz-panel result-panel">
           <div className="result-icon">🏆</div>
-          <span className="card-kicker">CHALLENGE COMPLETE</span>
-          <h1>Great effort!</h1>
+          <span className="card-kicker">{t.complete}</span>
+          <h1>{t.great}</h1>
           <div className="score-number">{score}<small> / 10</small></div>
-          <p className="intro">This score is calculated locally in this preview only.</p>
-          <button className="primary-btn" onClick={reset}>Back to Home <span>→</span></button>
+          <p className="intro">{t.localScore}</p>
+          <button className="primary-btn" onClick={reset}>{t.home} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
         </section>
       ) : (
         <section className="quiz-panel">
           <div className="quiz-heading">
-            <div><span className="card-kicker">BRAIN SPRINT</span><h1>General Knowledge Challenge</h1></div>
+            <div><span className="card-kicker">BRAIN SPRINT</span><h1>{t.challenge}</h1></div>
             <span className="counter">{index + 1} / 10</span>
           </div>
           <div className="progress-track"><span style={{ width: `${((index + 1) / questions.length) * 100}%` }} /></div>
           <div className="timer-row">
-            <span>Time remaining</span>
+            <span>{t.time}</span>
             <strong className={timeLeft <= 5 ? "timer-urgent" : ""}>{timeLeft}s</strong>
           </div>
           <div className="timer-track"><span className={timeLeft <= 5 ? "timer-low" : ""} style={{ width: `${(timeLeft / QUESTION_SECONDS) * 100}%` }} /></div>
-          <p className="question-label">QUESTION {index + 1}</p>
+          <p className="question-label">{t.question} {index + 1}</p>
           <h2 className="question">{questions[index].prompt}</h2>
           <div className="answers">
             {questions[index].answers.map((answer, i) => {
               const isChosen = selected === i;
               const isCorrect = selected !== null && i === questions[index].correct;
               return (
-                <button
-                  key={answer}
-                  className={`answer-btn ${isCorrect ? "correct" : ""} ${isChosen && !isCorrect ? "wrong" : ""}`}
-                  onClick={() => choose(i)}
-                  disabled={selected !== null}
-                >
+                <button key={answer} className={`answer-btn ${isCorrect ? "correct" : ""} ${isChosen && !isCorrect ? "wrong" : ""}`} onClick={() => choose(i)} disabled={selected !== null}>
                   <span className="answer-letter">{["A", "B", "C", "D"][i]}</span>
                   {answer}
                   {isCorrect && <span className="answer-mark">✓</span>}
@@ -142,17 +142,17 @@ export default function App() {
           </div>
           {selected !== null && (
             <div className="feedback">
-              <strong>{selected === -1 ? "Time is up!" : selected === questions[index].correct ? "Correct answer!" : "Not quite!"}</strong>
+              <strong>{selected === -1 ? t.timeUp : selected === questions[index].correct ? t.correct : t.incorrect}</strong>
               <p>{questions[index].note}</p>
-              <button className="primary-btn" onClick={next}>{index === 9 ? "View Results" : "Next Question"} <span>→</span></button>
+              <button className="primary-btn" onClick={next}>{index === 9 ? t.results : t.next} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
             </div>
           )}
-          <button className="text-btn" onClick={reset}>Exit Challenge</button>
+          <button className="text-btn" onClick={reset}>{t.exit}</button>
         </section>
       )}
 
       <footer className="footer">
-        <span>ONE ECOSYSTEM. THREE EXPERIENCES.</span>
+        <span>{t.footer}</span>
         <div><span>ARENA</span><i /> <span>ACADEMY</span><i /> <span>CLUB</span></div>
       </footer>
     </main>
