@@ -7,7 +7,8 @@ import {
   createBrainSprintQuestionOrder,
   evaluateBrainSprintAnswer,
   calculateBrainSprintXp,
-  getPlayerLevelFromXp
+  getPlayerLevelFromXp,
+  calculateDailyMissionReward
 } from "./brain-sprint.js";
 
 type GameSessionRow = {
@@ -222,12 +223,14 @@ export async function submitBrainSprintAnswer(input: {
         [input.playerId]
       );
       const previous = existingProgress.rows[0];
-      const dailyBonus = previous?.last_daily_bonus_date === today ? 0 : 20;
-      dailyStreak = !previous ? 1
-        : previous.last_daily_bonus_date === today ? previous.daily_streak
-        : previous.last_daily_bonus_date === yesterday ? previous.daily_streak + 1
-        : 1;
-      xpEarned = baseXp + dailyBonus;
+      const dailyReward = calculateDailyMissionReward(
+        previous?.last_daily_bonus_date ?? null,
+        today,
+        yesterday,
+        previous?.daily_streak ?? 0
+      );
+      dailyStreak = dailyReward.streak;
+      xpEarned = baseXp + dailyReward.bonusXp;
 
       if (previous) {
         const progressResult = await client.query<{ xp: number }>(
