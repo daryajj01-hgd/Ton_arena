@@ -9,6 +9,7 @@ import {
 } from "./brain-sprint.js";
 
 type GameSessionRow = {
+  [column: string]: unknown;
   id: string;
   question_order: number[];
   current_question_index: number;
