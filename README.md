@@ -23,3 +23,8 @@ TON ARENA is a Telegram-first skill gaming ecosystem designed to grow into a con
 ## Development approach
 
 Build incrementally, keep costs low, document confirmed decisions, and never report unverified progress as completed.
+
+
+## Database foundation
+
+Neon is the selected PostgreSQL provider for the MVP. The repository includes the initial player schema, a small connection pool, and a repeatable migration command. See [Neon setup](docs/NEON_SETUP.md) before connecting a live database. Never commit real environment secrets.
