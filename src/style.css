@@ -58,3 +58,6 @@ h1 span{color:#55e0bd}
 
 .game-error{color:#ffaaaa;background:#f0787810;border:1px solid #f0787855;border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.7;text-align:center}
 .primary-btn:disabled{opacity:.55;cursor:wait;transform:none}
+
+.progress-chip{border:1px solid #8fa7c355;border-radius:99px;padding:6px 10px;color:#b8cbe0;font-size:10px;white-space:nowrap;background:#8fa7c30b;direction:ltr}
+.xp-earned{margin:0 auto 20px;color:#70e2c7;font-size:13px;font-weight:700;direction:ltr}
