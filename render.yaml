@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: ton-arena-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    healthCheckPath: /health
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: AUTO_MIGRATE
+        value: "true"
+      - key: TRUST_PROXY
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: BRAIN_SPRINT_ANSWER_KEY
+        sync: false
