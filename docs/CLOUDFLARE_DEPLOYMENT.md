@@ -16,15 +16,16 @@ TON ARENA is deployed as one Cloudflare Worker with static frontend assets and a
 2. In Cloudflare Dashboard, open Workers & Pages > Hyperdrive and create a configuration named `ton-arena-neon`.
 3. Use the existing Neon PostgreSQL connection string for the `ton_arena_app` role. In Neon Connection Details, select the `ton_arena_app` role and turn **connection pooling off** before copying the connection string. Hyperdrive supplies its own global connection pool, so do not put Neon's `-pooler` URL behind Hyperdrive. Never paste this value into GitHub source code, an issue, or a chat.
 4. Copy the Hyperdrive configuration ID (32 lowercase hexadecimal characters).
-5. Create a Cloudflare API token with the minimum account-level permissions needed to deploy Workers Scripts and read account settings. Restrict it to the TON ARENA account. Do not use the Global API Key.
-6. In GitHub, open Settings > Secrets and variables > Actions and add:
+5. In Workers & Pages, create a basic Worker named `ton-arena` (this lets the deployment token be limited to that one existing Worker). Do not choose a paid plan.
+6. Create a Cloudflare API token with the **Workers Editor** role scoped only to the `ton-arena` Worker. Do not use the Global API Key. Creating the Worker in advance avoids granting the CI token account-wide Admin permissions.
+7. In GitHub, open Settings > Secrets and variables > Actions and add:
    - Secret `CLOUDFLARE_API_TOKEN`: the scoped Cloudflare API token.
    - Secret `CLOUDFLARE_ACCOUNT_ID`: the Cloudflare account ID.
    - Repository variable `HYPERDRIVE_ID`: the Hyperdrive configuration ID.
-7. In Cloudflare Workers & Pages, create the Worker once or let the first successful GitHub Actions deployment create it. After the Worker exists, add these two values under Settings > Variables and Secrets as **Secrets**:
+8. In Cloudflare Workers & Pages, open `ton-arena` > Settings > Variables and Secrets and add these two values as **Secrets**:
    - `TELEGRAM_BOT_TOKEN`
    - `BRAIN_SPRINT_ANSWER_KEY`
-   Then deploy again.
+   Then run the `Build check` workflow once and, after it passes, run `Deploy TON ARENA to Cloudflare Workers` from GitHub Actions.
 
 ## Important release gate
 
