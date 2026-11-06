@@ -1,5 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { checkDatabaseConnection, upsertPlayer } from "./database.js";
+import { createPlayerSession, findPlayerBySession, revokePlayerSession } from "./sessions.js";
 import { validateTelegramInitData } from "./telegram-auth.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
@@ -78,9 +79,21 @@ const server = createServer(async (request, response) => {
         return;
       }
 
+      let session;
+      try {
+        session = await createPlayerSession(player);
+      } catch {
+        sendJson(response, 503, { ok: false, error: "SESSION_CREATION_FAILED" });
+        return;
+      }
+
       sendJson(response, 200, {
         ok: true,
-        identityVerified: true,
+        authenticated: true,
+        session: {
+          token: session.token,
+          expiresAt: session.expiresAt.toISOString()
+        },
         player: {
           id: player.id,
           telegramId: player.telegram_id,
@@ -94,6 +107,51 @@ const server = createServer(async (request, response) => {
         ok: false,
         error: message === "BODY_TOO_LARGE" ? "REQUEST_TOO_LARGE" : "INVALID_REQUEST"
       });
+    }
+    return;
+  }
+
+  if (request.method === "GET" && request.url === "/api/me") {
+    const authorization = request.headers.authorization ?? "";
+    const match = /^Bearer ([A-Za-z0-9_-]{40,60})$/.exec(authorization);
+    if (!match) {
+      sendJson(response, 401, { ok: false, error: "UNAUTHENTICATED" });
+      return;
+    }
+
+    try {
+      const player = await findPlayerBySession(match[1]);
+      if (!player) {
+        sendJson(response, 401, { ok: false, error: "SESSION_INVALID_OR_EXPIRED" });
+        return;
+      }
+      sendJson(response, 200, {
+        ok: true,
+        player: {
+          id: player.id,
+          telegramId: player.telegram_id,
+          firstName: player.first_name,
+          username: player.username
+        }
+      });
+    } catch {
+      sendJson(response, 503, { ok: false, error: "SESSION_SERVICE_UNAVAILABLE" });
+    }
+    return;
+  }
+
+  if (request.method === "POST" && request.url === "/api/auth/logout") {
+    const authorization = request.headers.authorization ?? "";
+    const match = /^Bearer ([A-Za-z0-9_-]{40,60})$/.exec(authorization);
+    if (!match) {
+      sendJson(response, 401, { ok: false, error: "UNAUTHENTICATED" });
+      return;
+    }
+    try {
+      await revokePlayerSession(match[1]);
+      sendJson(response, 200, { ok: true, loggedOut: true });
+    } catch {
+      sendJson(response, 503, { ok: false, error: "SESSION_SERVICE_UNAVAILABLE" });
     }
     return;
   }
