@@ -164,6 +164,18 @@ Exit checks:
 - Public-facing policies and support paths are available.
 - Critical issues have an owner and response process.
 
+## Reward-economy research track
+
+**Status:** Research only; no TON payout is enabled or promised.
+
+- [ ] Model a transparent, funded skill-reward pool and platform operating allocation.
+- [ ] Research country-by-country legal, tax, consumer-protection, and platform requirements.
+- [ ] Specify anti-bot, multi-account, fair-play, and payout-abuse controls.
+- [ ] Validate unit economics and reserve funding with a small closed pilot.
+- [ ] Publish clear reward terms before any payout feature is activated.
+
+See [Reward Economy Proposal](REWARD_ECONOMY_PROPOSAL.md). The MVP remains free and uses XP/levels only. Do not describe gameplay as device mining.
+
 ## Phase 8 — Monetization and Web3
 
 **Goal:** Introduce sustainable revenue only after users receive clear value.
