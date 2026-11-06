@@ -85,7 +85,7 @@ function getClientIp(request: IncomingMessage): string {
     const forwardedFor = request.headers["x-forwarded-for"];
     if (typeof forwardedFor === "string") {
       const forwardedIps = forwardedFor.split(",").map((value) => value.trim()).filter(Boolean);
-      const trustedProxyClientIp = forwardedIps.at(-1);
+      const trustedProxyClientIp = forwardedIps[0];
       if (trustedProxyClientIp && trustedProxyClientIp.length <= 128) return trustedProxyClientIp;
     }
   }
