@@ -255,5 +255,6 @@ const server = createServer(async (request, response) => {
 });
 
 server.listen(PORT, "0.0.0.0", () => {
-  process.stdout.write(`TON ARENA API listening on port ${PORT}\n`);
+  process.stdout.write(`TON ARENA API listening on port ${PORT}
+`);
 });
