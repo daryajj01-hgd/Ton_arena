@@ -30,6 +30,24 @@ export default function App() {
   );
 
   useEffect(() => {
+    const webApp = window.Telegram?.WebApp;
+    if (!webApp?.initData) return;
+    webApp.ready();
+    webApp.expand();
+    let cancelled = false;
+    void (async () => {
+      try {
+        const auth = await authenticateTelegram(webApp.initData);
+        const profile = await getCurrentPlayer(auth.session.token);
+        if (!cancelled) setPlayerName(profile.player.firstName ?? profile.player.username ?? null);
+      } catch {
+        if (!cancelled) setPlayerName(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = locale.dir;
   }, [language, locale.dir]);
