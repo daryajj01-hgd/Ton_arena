@@ -99,7 +99,9 @@ export default function App() {
             level: response.result.level ?? current?.level ?? 1,
             gamesPlayed: (current?.gamesPlayed ?? 0) + 1,
             totalCorrect: (current?.totalCorrect ?? 0) + response.result.score,
-            bestScore: Math.max(current?.bestScore ?? 0, response.result.score)
+            bestScore: Math.max(current?.bestScore ?? 0, response.result.score),
+            dailyStreak: response.result.dailyStreak ?? current?.dailyStreak ?? 0,
+            dailyMissionCompleteToday: response.result.dailyMissionCompleteToday
           }));
           if (sessionToken) {
             try {
@@ -248,6 +250,13 @@ export default function App() {
             <div><strong>15</strong><span>{t.secondsEach}</span></div>
             <div><strong>0</strong><span>{t.entryFee}</span></div>
           </div>
+          {playerProgress && (
+            <div className="daily-mission-card">
+              <strong>{t.dailyMission}</strong>
+              <span>{playerProgress.dailyMissionCompleteToday ? t.dailyComplete : t.dailyIncomplete}</span>
+              <b>🔥 {playerProgress.dailyStreak}</b>
+            </div>
+          )}
           {leaderboard.length > 0 && (
             <section className="leaderboard-card">
               <h2>{t.leaderboardTitle}</h2>
