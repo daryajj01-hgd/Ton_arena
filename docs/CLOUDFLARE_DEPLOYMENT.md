@@ -14,7 +14,7 @@ TON ARENA is deployed as one Cloudflare Worker with static frontend assets and a
 
 1. Create or sign in to a Cloudflare account and keep the account on the Free plan.
 2. In Cloudflare Dashboard, open Workers & Pages > Hyperdrive and create a configuration named `ton-arena-neon`.
-3. Use the existing Neon PostgreSQL connection string for the `ton_arena_app` role. Use the pooled connection string if the console offers it. Never paste this value into GitHub source code, an issue, or a chat.
+3. Use the existing Neon PostgreSQL connection string for the `ton_arena_app` role. In Neon Connection Details, select the `ton_arena_app` role and turn **connection pooling off** before copying the connection string. Hyperdrive supplies its own global connection pool, so do not put Neon's `-pooler` URL behind Hyperdrive. Never paste this value into GitHub source code, an issue, or a chat.
 4. Copy the Hyperdrive configuration ID (32 lowercase hexadecimal characters).
 5. Create a Cloudflare API token with the minimum account-level permissions needed to deploy Workers Scripts and read account settings. Restrict it to the TON ARENA account. Do not use the Global API Key.
 6. In GitHub, open Settings > Secrets and variables > Actions and add:
