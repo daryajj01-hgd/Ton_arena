@@ -35,7 +35,9 @@
 - [x] Daily mission status and consecutive-day streak are shown in the home screen; streaks are tracked by UTC calendar day.
 - [x] Frontend session token is kept in memory only; a fresh Telegram launch re-authenticates rather than persisting a bearer token in browser storage.
 - [x] Basic API rate limiting: 10 Telegram auth attempts per IP/minute, 5 game starts per player/minute, 30 answers per player/minute, and bounded read-route limits.
-- [x] CI runs frontend type-checking, backend compilation, Telegram authentication tests, and frontend production build as separate steps.
+- [x] Node API serves the built frontend from the same origin, with SPA fallback and safe static path resolution.
+- [x] Multi-stage Dockerfile packages the frontend, API, and migrations without embedding environment secrets.
+- [x] CI verifies frontend type-checking, backend compilation, tests, frontend build, and production Docker image.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
 
 ## Important limitations
