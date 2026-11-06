@@ -29,6 +29,8 @@ export default function App() {
   const [serverCorrectAnswer, setServerCorrectAnswer] = useState<number | null>(null);
   const [apiBusy, setApiBusy] = useState(false);
   const [gameError, setGameError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [isTelegramApp, setIsTelegramApp] = useState(false);
 
   const t = translations[language];
   const locale = localeOptions.find((item) => item.code === language)!;
@@ -43,6 +45,8 @@ export default function App() {
   useEffect(() => {
     const webApp = window.Telegram?.WebApp;
     if (!webApp?.initData) return;
+    setIsTelegramApp(true);
+    setAuthLoading(true);
     webApp.ready();
     webApp.expand();
     let cancelled = false;
@@ -53,6 +57,8 @@ export default function App() {
         if (!cancelled) setPlayerName(profile.player.firstName ?? profile.player.username ?? null);
       } catch {
         if (!cancelled) setPlayerName(null);
+      } finally {
+        if (!cancelled) setAuthLoading(false);
       }
     })();
     return () => { cancelled = true; };
@@ -112,6 +118,10 @@ export default function App() {
     setServerCorrect(null);
     setServerCorrectAnswer(null);
     setQuestionOrder(Array.from({ length: 10 }, (_, i) => i));
+    if (isTelegramApp && !sessionToken) {
+      setGameError("Telegram sign-in is not ready. Please reopen the Mini App and try again.");
+      return;
+    }
     if (sessionToken) {
       setApiBusy(true);
       try {
@@ -200,7 +210,7 @@ export default function App() {
             </div>
             <span className="free-pill">{t.free}</span>
           </div>
-          <button className="primary-btn" onClick={() => { void startGame(); }}>{t.start} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
+          <button className="primary-btn" onClick={() => { void startGame(); }} disabled={apiBusy || authLoading}>{t.start} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
           <p className="fine-print">{t.noBetting}</p>
           {gameError && <p className="game-error" role="alert">{gameError}</p>}
           <div className="feature-row">
@@ -235,7 +245,8 @@ export default function App() {
           <div className="answers">
             {currentQuestion.answers.map((answer, i) => {
               const isChosen = selected === i;
-              const correctIndex = serverGame && serverCorrectAnswer !== null ? serverCorrectAnswer : currentQuestion.correct;\n              const isCorrect = selected !== null && i === correctIndex;
+              const correctIndex = serverGame && serverCorrectAnswer !== null ? serverCorrectAnswer : currentQuestion.correct;
+              const isCorrect = selected !== null && i === correctIndex;
               return (
                 <button key={answer} className={`answer-btn ${isCorrect ? "correct" : ""} ${isChosen && !isCorrect ? "wrong" : ""}`} onClick={() => choose(i)} disabled={selected !== null || apiBusy}>
                   <span className="answer-letter">{["A", "B", "C", "D"][i]}</span>
@@ -248,7 +259,7 @@ export default function App() {
           </div>
           {gameError && <p className="game-error" role="alert">{gameError}</p>}\n          {selected !== null && (
             <div className="feedback">
-              <strong>{selected === -1 ? t.timeUp : selected === questions[index].correct ? t.correct : t.incorrect}</strong>
+              <strong>{selected === -1 ? t.timeUp : (serverGame ? serverCorrect : selected === currentQuestion.correct) ? t.correct : t.incorrect}</strong>
               <p>{currentQuestion.note}</p>
               <button className="primary-btn" onClick={next}>{index === 9 ? t.results : t.next} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
             </div>
