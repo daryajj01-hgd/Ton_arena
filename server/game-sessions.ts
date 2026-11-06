@@ -62,7 +62,14 @@ export async function submitBrainSprintAnswer(input: {
   questionIndex: number;
   answerIndex: number;
 }): Promise<BrainSprintAnswerResult> {
-  if (!Number.isInteger(input.answerIndex) || input.answerIndex < -1 || input.answerIndex > 3) {
+  if (
+    !Number.isInteger(input.questionIndex) ||
+    input.questionIndex < 0 ||
+    input.questionIndex >= BRAIN_SPRINT_QUESTION_COUNT ||
+    !Number.isInteger(input.answerIndex) ||
+    input.answerIndex < -1 ||
+    input.answerIndex > 3
+  ) {
     return { status: "invalid_question" };
   }
 
