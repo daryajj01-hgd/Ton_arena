@@ -1,10 +1,8 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { validateTelegramInitData } from "./telegram-auth.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
 const MAX_BODY_BYTES = 16 * 1024;
-const MAX_AUTH_AGE_SECONDS = 24 * 60 * 60;
-const MAX_FUTURE_SKEW_SECONDS = 60;
 
 function sendJson(response: ServerResponse, status: number, payload: unknown): void {
   response.writeHead(status, {
@@ -27,42 +25,6 @@ async function readJsonBody(request: IncomingMessage): Promise<unknown> {
     return JSON.parse(body) as unknown;
   } catch {
     throw new Error("INVALID_JSON");
-  }
-}
-
-function validateTelegramInitData(initData: string, botToken: string): Record<string, unknown> | null {
-  const params = new URLSearchParams(initData);
-  const receivedHash = params.get("hash");
-  if (!receivedHash || !/^[a-f0-9]{64}$/i.test(receivedHash)) return null;
-
-  const fields = [...params.entries()]
-    .filter(([key]) => key !== "hash")
-    .sort(([a], [b]) => a.localeCompare(b));
-  const dataCheckString = fields.map(([key, value]) => `${key}=${value}`).join("\n");
-
-  const secretKey = createHmac("sha256", "WebAppData").update(botToken).digest();
-  const calculatedHash = createHmac("sha256", secretKey).update(dataCheckString).digest();
-  const suppliedHash = Buffer.from(receivedHash, "hex");
-  if (suppliedHash.length !== calculatedHash.length || !timingSafeEqual(suppliedHash, calculatedHash)) {
-    return null;
-  }
-
-  const authDate = Number(params.get("auth_date"));
-  const now = Math.floor(Date.now() / 1000);
-  if (!Number.isFinite(authDate) || now - authDate > MAX_AUTH_AGE_SECONDS || authDate - now > MAX_FUTURE_SKEW_SECONDS) {
-    return null;
-  }
-
-  const userValue = params.get("user");
-  if (!userValue) return null;
-  try {
-    const user: unknown = JSON.parse(userValue);
-    if (typeof user !== "object" || user === null || !("id" in user) || typeof user.id !== "number") {
-      return null;
-    }
-    return user as Record<string, unknown>;
-  } catch {
-    return null;
   }
 }
 
