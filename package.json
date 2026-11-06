@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "tsc -b && npm run build:server && vite build",
+    "build": "npm run typecheck && npm run build:server && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "build:server": "tsc -p tsconfig.server.json",
-    "start:server": "node dist-server/server.js"
+    "start:server": "node dist-server/server.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "react": "^18.3.1",
