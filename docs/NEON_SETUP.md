@@ -16,7 +16,7 @@
 3. Copy the pooled or direct PostgreSQL connection string from Neon. Keep it private.
 4. Set it as the server-side environment variable `DATABASE_URL`. Use Neon’s SSL-enabled connection string.
 5. Set `TELEGRAM_BOT_TOKEN` only as a server-side secret when Telegram authentication is ready.
-6. Run `npm run db:migrate` from the repository root once. The migration is safe to re-run.
+6. Run `npm run db:migrate` from the repository root. This applies both the player and player-session tables; the SQL uses `IF NOT EXISTS` and can be safely re-run.
 7. Start the API and check `GET /ready`. It should return HTTP 200 only when PostgreSQL is reachable.
 
 ## Environment variables
@@ -30,7 +30,8 @@ See [`.env.example`](../.env.example) for names and placeholder formats. Never c
 - The connection pool is intentionally small for the MVP.
 - `/health` checks whether the API process is alive.
 - `/ready` checks whether the database is reachable.
+- Player sessions are seven-day opaque tokens; only SHA-256 hashes are stored. `GET /api/me` checks a session and `POST /api/auth/logout` revokes it.
 
 ## Before real users
 
-Configure automated backups/restore expectations, review data retention and deletion, set provider spending/usage alerts where available, and add a secure player session mechanism. Do not treat the current identity-verification endpoint as a complete login system.
+Configure automated backups/restore expectations, review data retention and deletion, set provider spending/usage alerts where available, and complete browser-side session integration, rate limiting, HTTPS/origin controls, and end-to-end authentication tests. The server session API is implemented but not yet deployed or validated against a live Neon database.
