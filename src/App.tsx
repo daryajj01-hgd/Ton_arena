@@ -219,7 +219,7 @@ export default function App() {
           <div className="result-icon">🏆</div>
           <span className="card-kicker">{t.complete}</span>
           <h1>{t.great}</h1>
-          <div className="score-number">{score}<small> / 10</small></div>
+          <div className="score-number">{serverGame ? score : "—"}{serverGame && <small> / 10</small>}</div>
           <p className="intro">{serverGame ? "Your score has been verified by the TON ARENA server." : t.localScore}</p>
           <button className="primary-btn" onClick={reset}>{t.home} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
         </section>
