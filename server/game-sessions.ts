@@ -116,8 +116,15 @@ export async function submitBrainSprintAnswer(input: {
       let level: number | null = null;
       let dailyStreak: number | null = null;
       if (completed) {
-        const progressResult = await client.query<{ xp: number; daily_streak: number }>(
-          "SELECT xp, daily_streak FROM player_progress WHERE player_id = $1",
+        const progressResult = await client.query<{
+          xp: number;
+          daily_streak: number;
+          daily_mission_complete_today: boolean;
+        }>(
+          `SELECT xp, daily_streak,
+                  (last_daily_bonus_date = (NOW() AT TIME ZONE 'UTC')::date) AS daily_mission_complete_today
+           FROM player_progress
+           WHERE player_id = $1`,
           [input.playerId]
         );
         totalXp = progressResult.rows[0]?.xp ?? 0;
@@ -137,7 +144,7 @@ export async function submitBrainSprintAnswer(input: {
         totalXp,
         level,
         dailyStreak,
-        dailyMissionCompleteToday: completed
+        dailyMissionCompleteToday: completed ? (progressResult.rows[0]?.daily_mission_complete_today ?? false) : false
       };
     }
     if (session.status === "completed" || input.questionIndex !== session.current_question_index) {
