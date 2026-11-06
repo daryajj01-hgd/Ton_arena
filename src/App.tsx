@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { localeOptions, translations, type Locale } from "./i18n";
-import { authenticateTelegram, getCurrentPlayer } from "./api";
+import { authenticateTelegram, getCurrentPlayer, startBrainSprint, submitBrainSprintAnswer } from "./api";
 
 const QUESTION_SECONDS = 15;
 
@@ -20,14 +20,25 @@ export default function App() {
   const [finished, setFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(QUESTION_SECONDS);
   const [playerName, setPlayerName] = useState<string | null>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [gameSessionId, setGameSessionId] = useState<string | null>(null);
+  const [questionOrder, setQuestionOrder] = useState<number[]>(Array.from({ length: 10 }, (_, i) => i));
+  const [serverGame, setServerGame] = useState(false);
+  const [serverScore, setServerScore] = useState(0);
+  const [serverCorrect, setServerCorrect] = useState<boolean | null>(null);
+  const [serverCorrectAnswer, setServerCorrectAnswer] = useState<number | null>(null);
+  const [apiBusy, setApiBusy] = useState(false);
+  const [gameError, setGameError] = useState<string | null>(null);
 
   const t = translations[language];
   const locale = localeOptions.find((item) => item.code === language)!;
   const questions = t.questions;
-  const score = useMemo(
-    () => answers.reduce((total, answer, i) => total + (answer === questions[i]?.correct ? 1 : 0), 0),
-    [answers, questions]
+  const currentQuestion = questions[questionOrder[index] ?? index];
+  const localScore = useMemo(
+    () => answers.reduce((total, answer, i) => total + (answer === questions[questionOrder[i] ?? i]?.correct ? 1 : 0), 0),
+    [answers, questions, questionOrder]
   );
+  const score = serverGame ? serverScore : localScore;
 
   useEffect(() => {
     const webApp = window.Telegram?.WebApp;
@@ -52,21 +63,73 @@ export default function App() {
     document.documentElement.dir = locale.dir;
   }, [language, locale.dir]);
 
+  const submitAnswer = useCallback(async (answer: number) => {
+    if (selected !== null || apiBusy) return;
+    setApiBusy(true);
+    setGameError(null);
+    try {
+      if (serverGame && sessionToken && gameSessionId) {
+        const response = await submitBrainSprintAnswer(sessionToken, gameSessionId, answer);
+        setServerScore(response.result.score);
+        setServerCorrect(response.result.isCorrect);
+        setServerCorrectAnswer(response.result.correctAnswerIndex);
+      } else {
+        setServerCorrect(null);
+        setServerCorrectAnswer(null);
+      }
+      setSelected(answer);
+      setAnswers((current) => [...current, answer]);
+    } catch {
+      setGameError("Your answer could not be saved. Please try again.");
+      setTimeLeft(QUESTION_SECONDS);
+    } finally {
+      setApiBusy(false);
+    }
+  }, [selected, apiBusy, serverGame, sessionToken, gameSessionId]);
+
   useEffect(() => {
-    if (!started || finished || selected !== null) return;
+    if (!started || finished || selected !== null || apiBusy) return;
     if (timeLeft === 0) {
-      setSelected(-1);
-      setAnswers((current) => [...current, -1]);
+      void submitAnswer(-1);
       return;
     }
     const timer = window.setTimeout(() => setTimeLeft((current) => Math.max(0, current - 1)), 1000);
     return () => window.clearTimeout(timer);
-  }, [started, finished, selected, timeLeft]);
+  }, [started, finished, selected, timeLeft, apiBusy, submitAnswer]);
 
   const choose = (answer: number) => {
-    if (selected !== null) return;
-    setSelected(answer);
-    setAnswers((current) => [...current, answer]);
+    void submitAnswer(answer);
+  };
+
+  const startGame = async () => {
+    setGameError(null);
+    setIndex(0);
+    setSelected(null);
+    setAnswers([]);
+    setFinished(false);
+    setTimeLeft(QUESTION_SECONDS);
+    setServerScore(0);
+    setServerCorrect(null);
+    setServerCorrectAnswer(null);
+    setQuestionOrder(Array.from({ length: 10 }, (_, i) => i));
+    if (sessionToken) {
+      setApiBusy(true);
+      try {
+        const response = await startBrainSprint(sessionToken);
+        setGameSessionId(response.game.sessionId);
+        setQuestionOrder(response.game.questionOrder);
+        setServerGame(true);
+        setStarted(true);
+      } catch {
+        setGameError("The online game is not available yet. Please try again later.");
+      } finally {
+        setApiBusy(false);
+      }
+      return;
+    }
+    setGameSessionId(null);
+    setServerGame(false);
+    setStarted(true);
   };
 
   const next = () => {
@@ -77,6 +140,8 @@ export default function App() {
     setIndex((current) => current + 1);
     setSelected(null);
     setTimeLeft(QUESTION_SECONDS);
+    setServerCorrect(null);
+    setServerCorrectAnswer(null);
   };
 
   const reset = () => {
@@ -86,6 +151,12 @@ export default function App() {
     setAnswers([]);
     setFinished(false);
     setTimeLeft(QUESTION_SECONDS);
+    setGameSessionId(null);
+    setServerGame(false);
+    setServerScore(0);
+    setServerCorrect(null);
+    setServerCorrectAnswer(null);
+    setGameError(null);
   };
 
   const changeLanguage = (value: string) => {
@@ -129,8 +200,8 @@ export default function App() {
             </div>
             <span className="free-pill">{t.free}</span>
           </div>
-          <button className="primary-btn" onClick={() => { setStarted(true); setTimeLeft(QUESTION_SECONDS); }}>{t.start} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
-          <p className="fine-print">{t.noBetting}</p>
+          <button className="primary-btn" onClick={() => { void startGame(); }}>{t.start} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
+          <p className="fine-print">{t.noBetting}</p>\n          {gameError && <p className="game-error" role="alert">{gameError}</p>}
           <div className="feature-row">
             <div><strong>10</strong><span>{t.questionsLabel}</span></div>
             <div><strong>15</strong><span>{t.secondsEach}</span></div>
@@ -143,7 +214,7 @@ export default function App() {
           <span className="card-kicker">{t.complete}</span>
           <h1>{t.great}</h1>
           <div className="score-number">{score}<small> / 10</small></div>
-          <p className="intro">{t.localScore}</p>
+          <p className="intro">{serverGame ? "Your score has been verified by the TON ARENA server." : t.localScore}</p>
           <button className="primary-btn" onClick={reset}>{t.home} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
         </section>
       ) : (
@@ -159,13 +230,13 @@ export default function App() {
           </div>
           <div className="timer-track"><span className={timeLeft <= 5 ? "timer-low" : ""} style={{ width: `${(timeLeft / QUESTION_SECONDS) * 100}%` }} /></div>
           <p className="question-label">{t.question} {index + 1}</p>
-          <h2 className="question">{questions[index].prompt}</h2>
+          <h2 className="question">{currentQuestion.prompt}</h2>
           <div className="answers">
-            {questions[index].answers.map((answer, i) => {
+            {currentQuestion.answers.map((answer, i) => {
               const isChosen = selected === i;
-              const isCorrect = selected !== null && i === questions[index].correct;
+              const correctIndex = serverGame && serverCorrectAnswer !== null ? serverCorrectAnswer : currentQuestion.correct;\n              const isCorrect = selected !== null && i === correctIndex;
               return (
-                <button key={answer} className={`answer-btn ${isCorrect ? "correct" : ""} ${isChosen && !isCorrect ? "wrong" : ""}`} onClick={() => choose(i)} disabled={selected !== null}>
+                <button key={answer} className={`answer-btn ${isCorrect ? "correct" : ""} ${isChosen && !isCorrect ? "wrong" : ""}`} onClick={() => choose(i)} disabled={selected !== null || apiBusy}>
                   <span className="answer-letter">{["A", "B", "C", "D"][i]}</span>
                   {answer}
                   {isCorrect && <span className="answer-mark">✓</span>}
@@ -174,14 +245,14 @@ export default function App() {
               );
             })}
           </div>
-          {selected !== null && (
+          {gameError && <p className="game-error" role="alert">{gameError}</p>}\n          {selected !== null && (
             <div className="feedback">
               <strong>{selected === -1 ? t.timeUp : selected === questions[index].correct ? t.correct : t.incorrect}</strong>
-              <p>{questions[index].note}</p>
+              <p>{currentQuestion.note}</p>
               <button className="primary-btn" onClick={next}>{index === 9 ? t.results : t.next} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
             </div>
           )}
-          <button className="text-btn" onClick={reset}>{t.exit}</button>
+          <button className="text-btn" onClick={reset} disabled={apiBusy}>{t.exit}</button>
         </section>
       )}
 
