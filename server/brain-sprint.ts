@@ -56,3 +56,18 @@ export function getPlayerLevelFromXp(xp: number): number {
   if (!Number.isInteger(xp) || xp < 0) throw new Error("INVALID_PLAYER_XP");
   return Math.floor(xp / 100) + 1;
 }
+
+export function calculateDailyMissionReward(
+  lastBonusDate: string | null,
+  today: string,
+  yesterday: string,
+  previousStreak: number
+): { bonusXp: number; streak: number } {
+  if (lastBonusDate === today) {
+    return { bonusXp: 0, streak: previousStreak };
+  }
+  if (lastBonusDate === yesterday) {
+    return { bonusXp: 20, streak: previousStreak + 1 };
+  }
+  return { bonusXp: 20, streak: 1 };
+}
