@@ -1,15 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  BRAIN_SPRINT_ANSWER_KEY,
   BRAIN_SPRINT_QUESTION_COUNT,
   createBrainSprintQuestionOrder,
-  evaluateBrainSprintAnswer
+  evaluateBrainSprintAnswer,
+  getBrainSprintAnswerKey
 } from "../dist-server/brain-sprint.js";
 
-test("Brain Sprint has ten answer-key entries", () => {
-  assert.equal(BRAIN_SPRINT_ANSWER_KEY.length, BRAIN_SPRINT_QUESTION_COUNT);
-});
+const TEST_ANSWER_KEY = [1, 2, 2, 1, 2, 1, 2, 2, 2, 1];
 
 test("question order contains every question exactly once", () => {
   const order = createBrainSprintQuestionOrder(() => 0.37);
@@ -18,16 +16,31 @@ test("question order contains every question exactly once", () => {
 });
 
 test("answer evaluation accepts the correct option only", () => {
-  for (const [questionId, correctIndex] of BRAIN_SPRINT_ANSWER_KEY.entries()) {
-    assert.equal(evaluateBrainSprintAnswer(questionId, correctIndex), true);
-    assert.equal(evaluateBrainSprintAnswer(questionId, (correctIndex + 1) % 4), false);
+  for (const [questionId, correctIndex] of TEST_ANSWER_KEY.entries()) {
+    assert.equal(evaluateBrainSprintAnswer(questionId, correctIndex, TEST_ANSWER_KEY), true);
+    assert.equal(evaluateBrainSprintAnswer(questionId, (correctIndex + 1) % 4, TEST_ANSWER_KEY), false);
   }
 });
 
 test("invalid question and answer indexes are rejected", () => {
-  assert.equal(evaluateBrainSprintAnswer(-1, 0), false);
-  assert.equal(evaluateBrainSprintAnswer(10, 0), false);
-  assert.equal(evaluateBrainSprintAnswer(0, -1), false);
-  assert.equal(evaluateBrainSprintAnswer(0, 4), false);
-  assert.equal(evaluateBrainSprintAnswer(0, 1.5), false);
+  assert.equal(evaluateBrainSprintAnswer(-1, 0, TEST_ANSWER_KEY), false);
+  assert.equal(evaluateBrainSprintAnswer(10, 0, TEST_ANSWER_KEY), false);
+  assert.equal(evaluateBrainSprintAnswer(0, -1, TEST_ANSWER_KEY), false);
+  assert.equal(evaluateBrainSprintAnswer(0, 4, TEST_ANSWER_KEY), false);
+  assert.equal(evaluateBrainSprintAnswer(0, 1.5, TEST_ANSWER_KEY), false);
+});
+
+test("answer key is read from server environment and validated", () => {
+  const original = process.env.BRAIN_SPRINT_ANSWER_KEY;
+  try {
+    delete process.env.BRAIN_SPRINT_ANSWER_KEY;
+    assert.throws(() => getBrainSprintAnswerKey(), /NOT_CONFIGURED/);
+    process.env.BRAIN_SPRINT_ANSWER_KEY = JSON.stringify(TEST_ANSWER_KEY);
+    assert.deepEqual(getBrainSprintAnswerKey(), TEST_ANSWER_KEY);
+    process.env.BRAIN_SPRINT_ANSWER_KEY = JSON.stringify([0, 1]);
+    assert.throws(() => getBrainSprintAnswerKey(), /INVALID/);
+  } finally {
+    if (original === undefined) delete process.env.BRAIN_SPRINT_ANSWER_KEY;
+    else process.env.BRAIN_SPRINT_ANSWER_KEY = original;
+  }
 });
