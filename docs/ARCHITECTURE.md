@@ -95,9 +95,9 @@ The repository now contains an initial Node.js HTTP API in `server/server.ts`:
 - `GET /health` returns a basic service health response.
 - `POST /api/auth/telegram` accepts Telegram Mini App `initData`, validates the HMAC signature with the bot token, checks the `auth_date` freshness window, and returns a minimal authenticated player identity.
 - The bot token is read only from the server environment variable `TELEGRAM_BOT_TOKEN`; it must never be placed in frontend code or committed to Git.
-- The endpoint does not yet persist players, issue a session cookie/token, or connect to a database. It is a foundation, not production-ready authentication.
+- The signature and freshness checks are isolated in `server/telegram-auth.ts` and covered by automated Node.js tests for valid data, modified fields, expired/future timestamps, invalid user IDs, and invalid signatures. The endpoint still does not persist players, issue a session cookie/token, or connect to a database. It is a foundation, not production-ready authentication.
 
-Before public use, add a secure session strategy, origin/CSRF protections appropriate to the deployment, rate limiting, structured logging, persistent player records, and tests for valid, invalid, modified, and expired Telegram payloads.
+Before public use, add a secure session strategy, origin/CSRF protections appropriate to the deployment, rate limiting, structured logging, and persistent player records. The CI workflow now runs frontend type-checking, backend compilation, these authentication tests, and the frontend production build as separate steps.
 
 ## 6. MVP scope
 
