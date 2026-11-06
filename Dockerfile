@@ -5,6 +5,7 @@ COPY package.json ./
 RUN npm install
 COPY . .
 RUN npm run build
+RUN npm prune --omit=dev
 
 FROM node:20-alpine AS runtime
 WORKDIR /app
@@ -12,7 +13,7 @@ ENV NODE_ENV=production
 ENV PORT=3001
 
 COPY package.json ./
-RUN npm install --omit=dev
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/dist-server ./dist-server
 COPY --from=build /app/db ./db
