@@ -27,6 +27,11 @@ export function isRateLimited(
       value.timestamps = value.timestamps.filter((timestamp) => timestamp > cutoff);
       if (value.timestamps.length === 0) buckets.delete(bucketKey);
     }
+    while (buckets.size > 5_000) {
+      const oldestKey = buckets.keys().next().value;
+      if (oldestKey === undefined) break;
+      buckets.delete(oldestKey);
+    }
   }
 
   return false;
