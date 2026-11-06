@@ -16,12 +16,13 @@
 3. Copy the pooled or direct PostgreSQL connection string from Neon. Keep it private.
 4. Set it as the server-side environment variable `DATABASE_URL`. Use Neon’s SSL-enabled connection string.
 5. Set `TELEGRAM_BOT_TOKEN` only as a server-side secret when Telegram authentication is ready.
-6. Run `npm run db:migrate` from the repository root. This applies the player, player-session, and game-session tables; the SQL uses `IF NOT EXISTS` and can be safely re-run.
-7. Start the API and check `GET /ready`. It should return HTTP 200 only when PostgreSQL is reachable.
+6. Set `BRAIN_SPRINT_ANSWER_KEY` as a server-only JSON array containing ten correct option indexes (each from 0 to 3). Never use a `VITE_` prefix or expose this value to the frontend. The game start endpoint fails closed if this secret is missing or invalid.
+7. Run `npm run db:migrate` from the repository root. This applies the player, player-session, and game-session tables; the SQL uses `IF NOT EXISTS` and can be safely re-run.
+8. Start the API and check `GET /ready`. It should return HTTP 200 only when PostgreSQL is reachable.
 
 ## Environment variables
 
-See [`.env.example`](../.env.example) for names and placeholder formats. Set `VITE_API_BASE_URL` only if the frontend and API are hosted on different origins; otherwise leave it blank. Never commit a real `.env` file, database URL, or bot token.
+See [`.env.example`](../.env.example) for names and placeholder formats. Set `VITE_API_BASE_URL` only if the frontend and API are hosted on different origins; otherwise leave it blank. Never commit a real `.env` file, database URL, bot token, or answer-key secret.
 
 ## Database behavior
 
@@ -35,4 +36,9 @@ See [`.env.example`](../.env.example) for names and placeholder formats. Set `VI
 
 ## Before real users
 
-Configure automated backups/restore expectations, review data retention and deletion, set provider spending/usage alerts where available, and complete browser-side session integration, rate limiting, HTTPS/origin controls, and end-to-end authentication tests. The server session API is implemented but not yet deployed or validated against a live Neon database.
+Configure automated backups/restore expectations, review data retention and deletion, set provider spending/usage alerts where available, and complete rate limiting, HTTPS/origin controls, and end-to-end authentication tests. Frontend Telegram authentication and server-authoritative game API integration are implemented but not yet validated against a live Neon database.
+
+
+## Question-bank security note
+
+The current localized question prompts and choices are shipped to the client, but answer indexes are no longer included in the current frontend bundle or server source. The answer key is loaded only from `BRAIN_SPRINT_ANSWER_KEY`. Earlier public Git commits contained the prototype answer indexes, so this exact prototype question set must be replaced with a fresh question bank before any competitive public launch; moving the current key to a secret alone does not erase its historical exposure.
