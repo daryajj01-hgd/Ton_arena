@@ -5,7 +5,9 @@ import {
   BRAIN_SPRINT_QUESTION_SECONDS,
   BRAIN_SPRINT_SESSION_SECONDS,
   createBrainSprintQuestionOrder,
-  evaluateBrainSprintAnswer
+  evaluateBrainSprintAnswer,
+  calculateBrainSprintXp,
+  getPlayerLevelFromXp
 } from "./brain-sprint.js";
 
 type GameSessionRow = {
@@ -120,7 +122,7 @@ export async function submitBrainSprintAnswer(input: {
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [input.sessionId, questionIndex, questionId, acceptedAnswer, isCorrect, responseMs]
     );
-    const xpEarned = completed ? 10 + newScore * 5 : 0;
+    const xpEarned = completed ? calculateBrainSprintXp(newScore) : 0;
     let totalXp: number | null = null;
     let level: number | null = null;
 
@@ -140,7 +142,7 @@ export async function submitBrainSprintAnswer(input: {
         [input.playerId, xpEarned, newScore]
       );
       totalXp = progressResult.rows[0]?.xp ?? xpEarned;
-      level = Math.floor(totalXp / 100) + 1;
+      level = getPlayerLevelFromXp(totalXp);
     }
 
     await client.query(
@@ -200,7 +202,7 @@ export async function getPlayerProgress(playerId: string): Promise<PlayerProgres
   const xp = row?.xp ?? 0;
   return {
     xp,
-    level: Math.floor(xp / 100) + 1,
+    level: getPlayerLevelFromXp(xp),
     gamesPlayed: row?.games_played ?? 0,
     totalCorrect: row?.total_correct ?? 0,
     bestScore: row?.best_score ?? 0
