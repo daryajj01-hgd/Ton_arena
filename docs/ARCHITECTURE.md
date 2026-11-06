@@ -51,7 +51,7 @@ This is a logical diagram. No services in it should be considered deployed until
 | Source control | GitHub | Version history and collaboration |
 | Web3 | TON Connect, later | Add only after core product validation |
 
-These are recommendations, not irreversible decisions. Choose providers only after checking current free-tier limits, deployment requirements, and data-region/privacy needs.
+Neon is selected as the initial PostgreSQL provider; the project is not yet provisioned. These are not irreversible decisions. Confirm current free-tier limits, deployment requirements, and data-region/privacy needs before public launch.
 
 ## 4. Shared platform modules
 
@@ -138,8 +138,7 @@ Reuse identity, progression, missions, and moderation foundations. Add separate 
 
 ## 9. Decisions still required
 
-- Hosting and database provider.
-- Frontend/backend deployment arrangement.
+- Hosting and frontend/backend deployment arrangement.
 - Authentication/session implementation details.
 - Analytics provider or self-hosted event table.
 - Supported languages for first release.
