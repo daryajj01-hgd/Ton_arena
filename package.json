@@ -11,7 +11,8 @@
     "start:server": "node dist-server/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "build:frontend": "vite build",
-    "test": "node --test"
+    "test": "node --test",
+    "db:migrate": "npm run build:server && node dist-server/migrate.js"
   },
   "dependencies": {
     "react": "^18.3.1",
