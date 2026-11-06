@@ -293,6 +293,8 @@ export type PlayerProgress = {
   gamesPlayed: number;
   totalCorrect: number;
   bestScore: number;
+  dailyStreak: number;
+  dailyMissionCompleteToday: boolean;
 };
 
 export async function getPlayerProgress(playerId: string): Promise<PlayerProgress> {
