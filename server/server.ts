@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
-import { checkDatabaseConnection, upsertPlayer } from "./database.js";
+import { checkDatabaseConnection, closeDatabasePool, upsertPlayer } from "./database.js";
 import { createPlayerSession, findPlayerBySession, revokePlayerSession } from "./sessions.js";
 import { getLeaderboard, getPlayerProgress, startBrainSprint, submitBrainSprintAnswer } from "./game-sessions.js";
 import { validateTelegramInitData } from "./telegram-auth.js";
@@ -379,8 +379,9 @@ async function startServer(): Promise<void> {
   });
 }
 
-void startServer().catch((error: unknown) => {
+void startServer().catch(async (error: unknown) => {
   const message = error instanceof Error ? error.message : "UNKNOWN_STARTUP_ERROR";
   process.stderr.write(`TON ARENA startup failed: ${message}\n`);
+  await closeDatabasePool().catch(() => undefined);
   process.exitCode = 1;
 });
