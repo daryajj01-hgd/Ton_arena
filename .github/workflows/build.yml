@@ -36,6 +36,12 @@ jobs:
       - name: Build frontend
         run: npm run build:frontend
 
+      - name: Build Cloudflare Worker bundle (dry run)
+        run: |
+          sed 's/REPLACE_WITH_HYPERDRIVE_ID/00000000000000000000000000000000/g' wrangler.jsonc > wrangler.check.jsonc
+          npx --yes wrangler@4 deploy --dry-run --config wrangler.check.jsonc
+          rm -f wrangler.check.jsonc
+
       - name: Build production Docker image
         run: docker build -t ton-arena:ci .
 
