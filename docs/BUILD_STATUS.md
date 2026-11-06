@@ -34,6 +34,7 @@
 - [x] Authenticated top-ten leaderboard endpoint and localized top-five home-screen panel; only first names (not Telegram IDs or usernames) are displayed.
 - [x] Daily mission status and consecutive-day streak are shown in the home screen; streaks are tracked by UTC calendar day.
 - [x] Frontend session token is kept in memory only; a fresh Telegram launch re-authenticates rather than persisting a bearer token in browser storage.
+- [x] Basic API rate limiting: 10 Telegram auth attempts per IP/minute, 5 game starts per player/minute, 30 answers per player/minute, and bounded read-route limits.
 - [x] CI runs frontend type-checking, backend compilation, Telegram authentication tests, and frontend production build as separate steps.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
 
@@ -46,7 +47,7 @@
 - Neon has been selected, but no Neon project/account has been created or connected and the migration has not been applied. Player persistence is therefore not live yet.
 - Frontend Telegram sign-in and server game API integration are implemented in source. They still need a live Mini App end-to-end test against a provisioned database and deployed API. Do not consider authentication production-ready.
 - Server-side Brain Sprint sessions, scoring, XP, daily mission, and leaderboard code passed GitHub Actions. These features cannot run against real players until Neon is provisioned and all five migrations are applied. Earlier public commits exposed the prototype answer indexes, so this question set must be replaced before competitive public launch.
-- XP, daily mission, and leaderboard features are implemented in code but are not live until Neon is connected and migrations are applied. Rate limiting and full anti-cheat controls are not yet implemented.
+- XP, daily mission, and leaderboard features are implemented in code but are not live until Neon is connected and migrations are applied. Basic in-memory limits now protect Telegram auth and player/game endpoints; distributed rate limiting and full anti-cheat controls remain outstanding.
 - GitHub Actions completed successfully on commit `252a35c51e37aa6a13160da49dafa54ece3fef54`, including frontend type-check, backend compilation, Telegram auth/game logic tests, and frontend production build. This validates the code build, not a live Telegram/Neon deployment.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
 
