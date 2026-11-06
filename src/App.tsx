@@ -257,7 +257,8 @@ export default function App() {
               );
             })}
           </div>
-          {gameError && <p className="game-error" role="alert">{gameError}</p>}\n          {selected !== null && (
+          {gameError && <p className="game-error" role="alert">{gameError}</p>}
+          {selected !== null && (
             <div className="feedback">
               <strong>{selected === -1 ? t.timeUp : (serverGame ? serverCorrect : selected === currentQuestion.correct) ? t.correct : t.incorrect}</strong>
               <p>{currentQuestion.note}</p>
