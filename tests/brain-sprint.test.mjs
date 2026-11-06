@@ -5,6 +5,7 @@ import {
   createBrainSprintQuestionOrder,
   calculateBrainSprintXp,
   getPlayerLevelFromXp,
+  calculateDailyMissionReward,
   evaluateBrainSprintAnswer,
   getBrainSprintAnswerKey
 } from "../dist-server/brain-sprint.js";
@@ -60,4 +61,23 @@ test("player levels advance for each 100 XP", () => {
   assert.equal(getPlayerLevelFromXp(100), 2);
   assert.equal(getPlayerLevelFromXp(250), 3);
   assert.throws(() => getPlayerLevelFromXp(-1), /INVALID/);
+});
+
+test("daily mission rewards once per UTC day and builds consecutive streaks", () => {
+  assert.deepEqual(calculateDailyMissionReward(null, "2026-11-06", "2026-11-05", 0), {
+    bonusXp: 20,
+    streak: 1
+  });
+  assert.deepEqual(calculateDailyMissionReward("2026-11-06", "2026-11-06", "2026-11-05", 3), {
+    bonusXp: 0,
+    streak: 3
+  });
+  assert.deepEqual(calculateDailyMissionReward("2026-11-05", "2026-11-06", "2026-11-05", 3), {
+    bonusXp: 20,
+    streak: 4
+  });
+  assert.deepEqual(calculateDailyMissionReward("2026-11-01", "2026-11-06", "2026-11-05", 4), {
+    bonusXp: 20,
+    streak: 1
+  });
 });
