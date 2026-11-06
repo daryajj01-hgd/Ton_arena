@@ -1,25 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 
-type Question = {
-  prompt: string;
-  answers: string[];
-  correct: number;
-  note: string;
-};
+type Question = { prompt: string; answers: string[]; correct: number; note: string };
 
 const QUESTION_SECONDS = 15;
 
 const questions: Question[] = [
-  { prompt: "کدام سیاره به «سیاره سرخ» معروف است؟", answers: ["زهره", "مریخ", "مشتری", "عطارد"], correct: 1, note: "وجود اکسید آهن در سطح مریخ باعث رنگ سرخ آن شده است." },
-  { prompt: "بزرگ‌ترین اقیانوس زمین کدام است؟", answers: ["اطلس", "هند", "آرام", "منجمد شمالی"], correct: 2, note: "اقیانوس آرام بزرگ‌ترین و عمیق‌ترین اقیانوس زمین است." },
-  { prompt: "عدد حاصل از ۱۲ ضربدر ۸ چند است؟", answers: ["۸۶", "۹۲", "۹۶", "۱۰۸"], correct: 2, note: "۱۲ × ۸ = ۹۶." },
-  { prompt: "کدام عنصر نماد شیمیایی O دارد؟", answers: ["طلا", "اکسیژن", "آهن", "نقره"], correct: 1, note: "نماد O از واژه Oxygen گرفته شده است." },
-  { prompt: "پایتخت ژاپن کدام شهر است؟", answers: ["کیوتو", "اوساکا", "توکیو", "هیروشیما"], correct: 2, note: "توکیو پایتخت ژاپن است." },
-  { prompt: "کدام جانور پستاندار تخم‌گذار است؟", answers: ["خفاش", "پلاتیپوس", "دلفین", "کانگورو"], correct: 1, note: "پلاتیپوس از معدود پستانداران تخم‌گذار است." },
-  { prompt: "یک کیلومتر چند متر است؟", answers: ["۱۰۰", "۵۰۰", "۱۰۰۰", "۱۰٬۰۰۰"], correct: 2, note: "هر کیلومتر برابر با هزار متر است." },
-  { prompt: "کدام گاز بیشترین سهم را در هوای زمین دارد؟", answers: ["اکسیژن", "دی‌اکسید کربن", "نیتروژن", "هیدروژن"], correct: 2, note: "حدود ۷۸ درصد جو زمین از نیتروژن تشکیل شده است." },
-  { prompt: "کدام قاره بزرگ‌ترین جمعیت را دارد؟", answers: ["آفریقا", "اروپا", "آسیا", "آمریکای جنوبی"], correct: 2, note: "آسیا پرجمعیت‌ترین قاره جهان است." },
-  { prompt: "نور خورشید تقریباً چند دقیقه طول می‌کشد تا به زمین برسد؟", answers: ["۲ دقیقه", "۸ دقیقه", "۲۰ دقیقه", "۶۰ دقیقه"], correct: 1, note: "این زمان به‌طور متوسط حدود ۸ دقیقه و ۲۰ ثانیه است." }
+  { prompt: "Which planet is known as the Red Planet?", answers: ["Venus", "Mars", "Jupiter", "Mercury"], correct: 1, note: "Iron oxide on the surface gives Mars its reddish appearance." },
+  { prompt: "What is the largest ocean on Earth?", answers: ["Atlantic", "Indian", "Pacific", "Arctic"], correct: 2, note: "The Pacific is Earth's largest and deepest ocean." },
+  { prompt: "What is 12 multiplied by 8?", answers: ["86", "92", "96", "108"], correct: 2, note: "12 × 8 = 96." },
+  { prompt: "Which chemical element has the symbol O?", answers: ["Gold", "Oxygen", "Iron", "Silver"], correct: 1, note: "The symbol O stands for oxygen." },
+  { prompt: "What is the capital of Japan?", answers: ["Kyoto", "Osaka", "Tokyo", "Hiroshima"], correct: 2, note: "Tokyo is the capital of Japan." },
+  { prompt: "Which of these mammals lays eggs?", answers: ["Bat", "Platypus", "Dolphin", "Kangaroo"], correct: 1, note: "The platypus is one of the few egg-laying mammals." },
+  { prompt: "How many meters are in one kilometer?", answers: ["100", "500", "1,000", "10,000"], correct: 2, note: "One kilometer is equal to 1,000 meters." },
+  { prompt: "Which gas makes up most of Earth's atmosphere?", answers: ["Oxygen", "Carbon dioxide", "Nitrogen", "Hydrogen"], correct: 2, note: "About 78% of Earth's atmosphere is nitrogen." },
+  { prompt: "Which continent has the largest population?", answers: ["Africa", "Europe", "Asia", "South America"], correct: 2, note: "Asia is the world's most populous continent." },
+  { prompt: "About how long does sunlight take to reach Earth?", answers: ["2 minutes", "8 minutes", "20 minutes", "60 minutes"], correct: 1, note: "Sunlight takes about 8 minutes and 20 seconds to reach Earth." }
 ];
 
 export default function App() {
@@ -37,17 +32,12 @@ export default function App() {
 
   useEffect(() => {
     if (!started || finished || selected !== null) return;
-
     if (timeLeft === 0) {
       setSelected(-1);
       setAnswers((current) => [...current, -1]);
       return;
     }
-
-    const timer = window.setTimeout(() => {
-      setTimeLeft((current) => Math.max(0, current - 1));
-    }, 1000);
-
+    const timer = window.setTimeout(() => setTimeLeft((current) => Math.max(0, current - 1)), 1000);
     return () => window.clearTimeout(timer);
   }, [started, finished, selected, timeLeft]);
 
@@ -83,53 +73,53 @@ export default function App() {
           <span className="brand-mark">T</span>
           <span>TON <b>ARENA</b></span>
         </a>
-        <span className="top-tag">نسخه آزمایشی</span>
+        <span className="top-tag">BETA VERSION</span>
       </header>
 
       {!started ? (
         <section className="hero">
-          <div className="eyebrow"><span className="live-dot" /> بازی کن · یاد بگیر · پیشرفت کن</div>
-          <h1>رقابت از <span>اینجا</span> شروع می‌شود.</h1>
-          <p className="intro">به دنیای TON ARENA خوش آمدی؛ جایی برای سنجش مهارت، یادگیری و رقابت دوستانه.</p>
+          <div className="eyebrow"><span className="live-dot" /> PLAY · LEARN · LEVEL UP</div>
+          <h1>Competition starts <span>here.</span></h1>
+          <p className="intro">Welcome to TON ARENA — a place to test your skills, learn something new, and enjoy friendly competition.</p>
           <div className="game-card">
             <div className="game-icon">⚡</div>
             <div className="game-copy">
-              <span className="card-kicker">بازی منتخب</span>
+              <span className="card-kicker">FEATURED GAME</span>
               <h2>BRAIN SPRINT</h2>
-              <p>۱۰ پرسش · ۱۵ ثانیه برای هر پاسخ</p>
+              <p>10 questions · 15 seconds per question</p>
             </div>
-            <span className="free-pill">رایگان</span>
+            <span className="free-pill">FREE</span>
           </div>
-          <button className="primary-btn" onClick={() => { setStarted(true); setTimeLeft(QUESTION_SECONDS); }}>شروع چالش <span>←</span></button>
-          <p className="fine-print">بدون شرط‌بندی یا پرداخت ورودی؛ فقط مهارت و یادگیری.</p>
+          <button className="primary-btn" onClick={() => { setStarted(true); setTimeLeft(QUESTION_SECONDS); }}>Start Challenge <span>→</span></button>
+          <p className="fine-print">No betting or entry fees — just skill and learning.</p>
           <div className="feature-row">
-            <div><strong>۱۰</strong><span>پرسش</span></div>
-            <div><strong>۱۵</strong><span>ثانیه برای هر پرسش</span></div>
-            <div><strong>۰</strong><span>هزینه ورود</span></div>
+            <div><strong>10</strong><span>Questions</span></div>
+            <div><strong>15</strong><span>Seconds each</span></div>
+            <div><strong>0</strong><span>Entry fee</span></div>
           </div>
         </section>
       ) : finished ? (
         <section className="quiz-panel result-panel">
           <div className="result-icon">🏆</div>
-          <span className="card-kicker">پایان چالش</span>
-          <h1>آفرین! تلاش خوبی بود.</h1>
-          <div className="score-number">{score}<small> / ۱۰</small></div>
-          <p className="intro">این نتیجه فقط در همین پیش‌نمایش روی دستگاه محاسبه شده است.</p>
-          <button className="primary-btn" onClick={reset}>بازگشت به خانه <span>←</span></button>
+          <span className="card-kicker">CHALLENGE COMPLETE</span>
+          <h1>Great effort!</h1>
+          <div className="score-number">{score}<small> / 10</small></div>
+          <p className="intro">This score is calculated locally in this preview only.</p>
+          <button className="primary-btn" onClick={reset}>Back to Home <span>→</span></button>
         </section>
       ) : (
         <section className="quiz-panel">
           <div className="quiz-heading">
-            <div><span className="card-kicker">BRAIN SPRINT</span><h1>چالش دانش عمومی</h1></div>
-            <span className="counter">{index + 1} / ۱۰</span>
+            <div><span className="card-kicker">BRAIN SPRINT</span><h1>General Knowledge Challenge</h1></div>
+            <span className="counter">{index + 1} / 10</span>
           </div>
           <div className="progress-track"><span style={{ width: `${((index + 1) / questions.length) * 100}%` }} /></div>
           <div className="timer-row">
-            <span>زمان باقی‌مانده</span>
-            <strong className={timeLeft <= 5 ? "timer-urgent" : ""}>{timeLeft} ثانیه</strong>
+            <span>Time remaining</span>
+            <strong className={timeLeft <= 5 ? "timer-urgent" : ""}>{timeLeft}s</strong>
           </div>
           <div className="timer-track"><span className={timeLeft <= 5 ? "timer-low" : ""} style={{ width: `${(timeLeft / QUESTION_SECONDS) * 100}%` }} /></div>
-          <p className="question-label">پرسش شماره {index + 1}</p>
+          <p className="question-label">QUESTION {index + 1}</p>
           <h2 className="question">{questions[index].prompt}</h2>
           <div className="answers">
             {questions[index].answers.map((answer, i) => {
@@ -142,7 +132,7 @@ export default function App() {
                   onClick={() => choose(i)}
                   disabled={selected !== null}
                 >
-                  <span className="answer-letter">{["الف", "ب", "ج", "د"][i]}</span>
+                  <span className="answer-letter">{["A", "B", "C", "D"][i]}</span>
                   {answer}
                   {isCorrect && <span className="answer-mark">✓</span>}
                   {isChosen && !isCorrect && <span className="answer-mark">×</span>}
@@ -152,17 +142,17 @@ export default function App() {
           </div>
           {selected !== null && (
             <div className="feedback">
-              <strong>{selected === -1 ? "زمان پاسخ‌گویی تمام شد." : selected === questions[index].correct ? "پاسخ درست بود!" : "این بار درست نبود."}</strong>
+              <strong>{selected === -1 ? "Time is up!" : selected === questions[index].correct ? "Correct answer!" : "Not quite!"}</strong>
               <p>{questions[index].note}</p>
-              <button className="primary-btn" onClick={next}>{index === 9 ? "دیدن نتیجه" : "پرسش بعدی"} <span>←</span></button>
+              <button className="primary-btn" onClick={next}>{index === 9 ? "View Results" : "Next Question"} <span>→</span></button>
             </div>
           )}
-          <button className="text-btn" onClick={reset}>خروج از چالش</button>
+          <button className="text-btn" onClick={reset}>Exit Challenge</button>
         </section>
       )}
 
       <footer className="footer">
-        <span>یک اکوسیستم، سه تجربه</span>
+        <span>ONE ECOSYSTEM. THREE EXPERIENCES.</span>
         <div><span>ARENA</span><i /> <span>ACADEMY</span><i /> <span>CLUB</span></div>
       </footer>
     </main>
