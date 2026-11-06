@@ -1,6 +1,7 @@
 import { Pool } from "pg";
 
 export type PlayerRecord = {
+  [column: string]: unknown;
   id: string;
   telegram_id: string;
   first_name: string | null;
