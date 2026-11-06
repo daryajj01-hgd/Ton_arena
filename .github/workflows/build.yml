@@ -35,3 +35,6 @@ jobs:
 
       - name: Build frontend
         run: npm run build:frontend
+
+      - name: Build production Docker image
+        run: docker build -t ton-arena:ci .
