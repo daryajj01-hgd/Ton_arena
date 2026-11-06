@@ -8,8 +8,10 @@ async function main(): Promise<void> {
     throw new Error("DATABASE_NOT_CONFIGURED: set DATABASE_URL before running migrations");
   }
 
-  const migrationPath = resolve(process.cwd(), "db/migrations/001_create_players.sql");
-  const sql = await readFile(migrationPath, "utf8");
+  const migrationFiles = [
+    "001_create_players.sql",
+    "002_create_player_sessions.sql"
+  ];
   const pool = new Pool({
     connectionString,
     max: 1,
