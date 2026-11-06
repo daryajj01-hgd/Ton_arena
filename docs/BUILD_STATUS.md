@@ -38,6 +38,7 @@
 - [x] Node API serves the built frontend from the same origin, with SPA fallback and safe static path resolution.
 - [x] Multi-stage non-root Docker image packages the frontend, API, and migrations without embedding environment secrets.
 - [x] Render staging Blueprint in Frankfurt, with server-side secrets prompted during setup, trusted-proxy handling, health checks, CI-gated deploys, and optional startup migrations.
+- [x] Startup migration registry is shared with the manual migration command; Render's single-instance staging setup applies all five idempotent migrations before listening.
 - [x] CI verifies frontend type-checking, backend compilation, tests, frontend build, Docker image build, and container smoke tests for `/health` plus the served frontend.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
 
@@ -51,7 +52,7 @@
 - Frontend Telegram sign-in and server game API integration are implemented in source. They still need a live Mini App end-to-end test against a provisioned database and deployed API. Do not consider authentication production-ready.
 - Server-side Brain Sprint sessions, scoring, XP, daily mission, and leaderboard code passed GitHub Actions. These features cannot run against real players until Neon is provisioned and all five migrations are applied. Earlier public commits exposed the prototype answer indexes, so this question set must be replaced before competitive public launch.
 - XP, daily mission, and leaderboard features are implemented in code but are not live until Neon is connected and migrations are applied. Basic in-memory limits now protect Telegram auth and player/game endpoints; distributed rate limiting and full anti-cheat controls remain outstanding.
-- GitHub Actions completed successfully on commit `42d9ea2b7ad19f12864bda11ac7d9036259300db`, including frontend type-check, backend compilation, all automated tests, Docker image build, and container smoke tests for the health endpoint and frontend. This validates the container build, not a live Telegram/Neon deployment.
+- GitHub Actions completed successfully on commit `245cf81d9f96596ac6377f6355a344f1d154e40a`, including frontend type-check, backend compilation, Telegram/game/progression/rate-limit tests, Docker image build, and container smoke tests for the health endpoint and frontend. This validates the container build, not a live Telegram/Neon deployment.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
 
 ## Next milestone
