@@ -82,6 +82,7 @@ Neon is selected as the initial PostgreSQL provider; the project is not yet prov
 - Completing a Brain Sprint round awards 10 participation XP plus 5 XP per correct answer (maximum 60 XP per completed round).
 - Player levels are derived at one level per 100 cumulative XP, starting at level 1.
 - XP and basic lifetime stats are persisted in `player_progress` and returned by authenticated `GET /api/progress`.
+- Authenticated `GET /api/leaderboard` returns the top ten by XP, then best score and games played; the client displays the top five and does not expose Telegram IDs or usernames.
 
 ### Game engine
 - Server issues a game session and randomized question order. The current server API is `POST /api/games/brain-sprint/start`.
