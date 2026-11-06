@@ -19,8 +19,12 @@ async function main(): Promise<void> {
   });
 
   try {
-    await pool.query(sql);
-    process.stdout.write("Database migration 001_create_players completed successfully.\n");
+    for (const fileName of migrationFiles) {
+      const migrationPath = resolve(process.cwd(), "db/migrations", fileName);
+      const sql = await readFile(migrationPath, "utf8");
+      await pool.query(sql);
+      process.stdout.write(`Database migration ${fileName} completed successfully.\n`);
+    }
   } finally {
     await pool.end();
   }
