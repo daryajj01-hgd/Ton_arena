@@ -16,7 +16,7 @@
 3. Copy the pooled or direct PostgreSQL connection string from Neon. Keep it private.
 4. Set it as the server-side environment variable `DATABASE_URL`. Use Neon’s SSL-enabled connection string.
 5. Set `TELEGRAM_BOT_TOKEN` only as a server-side secret when Telegram authentication is ready.
-6. Run `npm run db:migrate` from the repository root. This applies both the player and player-session tables; the SQL uses `IF NOT EXISTS` and can be safely re-run.
+6. Run `npm run db:migrate` from the repository root. This applies the player, player-session, and game-session tables; the SQL uses `IF NOT EXISTS` and can be safely re-run.
 7. Start the API and check `GET /ready`. It should return HTTP 200 only when PostgreSQL is reachable.
 
 ## Environment variables
@@ -31,6 +31,7 @@ See [`.env.example`](../.env.example) for names and placeholder formats. Set `VI
 - `/health` checks whether the API process is alive.
 - `/ready` checks whether the database is reachable.
 - Player sessions are seven-day opaque tokens; only SHA-256 hashes are stored. `GET /api/me` checks a session and `POST /api/auth/logout` revokes it.
+- Brain Sprint game rounds are created by `POST /api/games/brain-sprint/start`; submit each selected answer to `POST /api/games/brain-sprint/:sessionId/answer` using the session bearer token.
 
 ## Before real users
 
