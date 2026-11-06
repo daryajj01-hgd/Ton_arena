@@ -48,6 +48,9 @@ export type BrainSprintAnswerResult =
       answeredQuestionIndex: number;
       completed: boolean;
       nextQuestionIndex: number;
+      xpEarned: number;
+      totalXp: number | null;
+      level: number | null;
     };
 
 export async function submitBrainSprintAnswer(input: {
@@ -117,15 +120,39 @@ export async function submitBrainSprintAnswer(input: {
        VALUES ($1, $2, $3, $4, $5, $6)`,
       [input.sessionId, questionIndex, questionId, acceptedAnswer, isCorrect, responseMs]
     );
+    const xpEarned = completed ? 10 + newScore * 5 : 0;
+    let totalXp: number | null = null;
+    let level: number | null = null;
+
+    if (completed) {
+      const progressResult = await client.query<{ xp: number }>(
+        `INSERT INTO player_progress
+         (player_id, xp, games_played, total_correct, best_score, last_game_completed_at)
+         VALUES ($1, $2, 1, $3, $3, NOW())
+         ON CONFLICT (player_id) DO UPDATE SET
+           xp = player_progress.xp + EXCLUDED.xp,
+           games_played = player_progress.games_played + 1,
+           total_correct = player_progress.total_correct + EXCLUDED.total_correct,
+           best_score = GREATEST(player_progress.best_score, EXCLUDED.best_score),
+           last_game_completed_at = NOW(),
+           updated_at = NOW()
+         RETURNING xp`,
+        [input.playerId, xpEarned, newScore]
+      );
+      totalXp = progressResult.rows[0]?.xp ?? xpEarned;
+      level = Math.floor(totalXp / 100) + 1;
+    }
+
     await client.query(
       `UPDATE game_sessions
        SET current_question_index = $2,
            score = $3,
            question_started_at = NOW(),
            status = $4,
-           completed_at = CASE WHEN $4 = 'completed' THEN NOW() ELSE NULL END
+           completed_at = CASE WHEN $4 = 'completed' THEN NOW() ELSE NULL END,
+           xp_awarded = $5
        WHERE id = $1`,
-      [input.sessionId, nextQuestionIndex, newScore, completed ? "completed" : "active"]
+      [input.sessionId, nextQuestionIndex, newScore, completed ? "completed" : "active", xpEarned]
     );
     await client.query("COMMIT");
 
@@ -136,7 +163,10 @@ export async function submitBrainSprintAnswer(input: {
       score: newScore,
       answeredQuestionIndex: questionIndex,
       completed,
-      nextQuestionIndex
+      nextQuestionIndex,
+      xpEarned,
+      totalXp,
+      level
     };
   } catch (error) {
     await client.query("ROLLBACK");
