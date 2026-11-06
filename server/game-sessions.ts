@@ -19,6 +19,7 @@ type GameSessionRow = {
   status: "active" | "completed" | "expired";
   question_started_at: Date;
   expires_at: Date;
+  xp_awarded: number;
 };
 
 export async function startBrainSprint(playerId: string): Promise<{
@@ -58,6 +59,7 @@ export type BrainSprintAnswerResult =
 export async function submitBrainSprintAnswer(input: {
   playerId: string;
   sessionId: string;
+  questionIndex: number;
   answerIndex: number;
 }): Promise<BrainSprintAnswerResult> {
   if (!Number.isInteger(input.answerIndex) || input.answerIndex < -1 || input.answerIndex > 3) {
@@ -71,7 +73,7 @@ export async function submitBrainSprintAnswer(input: {
     await client.query("BEGIN");
     const result = await client.query<GameSessionRow>(
       `SELECT id, question_order, current_question_index, score, status,
-              question_started_at, expires_at
+              question_started_at, expires_at, xp_awarded
        FROM game_sessions
        WHERE id = $1 AND player_id = $2 AND game_code = 'brain_sprint'
        FOR UPDATE`,
@@ -82,9 +84,52 @@ export async function submitBrainSprintAnswer(input: {
       await client.query("ROLLBACK");
       return { status: "not_found" };
     }
-    if (session.status === "completed") {
+    if (input.questionIndex < session.current_question_index) {
+      const priorResult = await client.query<{ question_id: number; is_correct: boolean }>(
+        `SELECT question_id, is_correct
+         FROM game_session_answers
+         WHERE game_session_id = $1 AND question_index = $2`,
+        [input.sessionId, input.questionIndex]
+      );
+      const prior = priorResult.rows[0];
+      if (!prior) {
+        await client.query("ROLLBACK");
+        return { status: "invalid_question" };
+      }
+      const scoreResult = await client.query<{ score: number }>(
+        `SELECT COUNT(*)::int AS score
+         FROM game_session_answers
+         WHERE game_session_id = $1 AND question_index <= $2 AND is_correct = TRUE`,
+        [input.sessionId, input.questionIndex]
+      );
+      const completed = session.status === "completed" && input.questionIndex === BRAIN_SPRINT_QUESTION_COUNT - 1;
+      let totalXp: number | null = null;
+      let level: number | null = null;
+      if (completed) {
+        const progressResult = await client.query<{ xp: number }>(
+          "SELECT xp FROM player_progress WHERE player_id = $1",
+          [input.playerId]
+        );
+        totalXp = progressResult.rows[0]?.xp ?? 0;
+        level = getPlayerLevelFromXp(totalXp);
+      }
+      await client.query("COMMIT");
+      return {
+        status: "accepted",
+        isCorrect: prior.is_correct,
+        correctAnswerIndex: answerKey[prior.question_id],
+        score: scoreResult.rows[0]?.score ?? 0,
+        answeredQuestionIndex: input.questionIndex,
+        completed,
+        nextQuestionIndex: input.questionIndex + 1,
+        xpEarned: completed ? session.xp_awarded : 0,
+        totalXp,
+        level
+      };
+    }
+    if (session.status === "completed" || input.questionIndex !== session.current_question_index) {
       await client.query("ROLLBACK");
-      return { status: "completed" };
+      return { status: session.status === "completed" ? "completed" : "invalid_question" };
     }
     if (session.status !== "active" || new Date(session.expires_at).getTime() <= Date.now()) {
       await client.query(
@@ -98,7 +143,7 @@ export async function submitBrainSprintAnswer(input: {
     const questionIndex = session.current_question_index;
     const questionId = session.question_order[questionIndex];
     if (
-      questionIndex >= BRAIN_SPRINT_QUESTION_COUNT ||
+      questionIndex >= BRAIN_SPRINT_QUESTION_COUNT ||\n      input.questionIndex !== questionIndex ||
       !Number.isInteger(questionId) ||
       questionId < 0 ||
       questionId >= answerKey.length
