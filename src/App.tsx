@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Question = {
   prompt: string;
@@ -6,6 +6,8 @@ type Question = {
   correct: number;
   note: string;
 };
+
+const QUESTION_SECONDS = 15;
 
 const questions: Question[] = [
   { prompt: "کدام سیاره به «سیاره سرخ» معروف است؟", answers: ["زهره", "مریخ", "مشتری", "عطارد"], correct: 1, note: "وجود اکسید آهن در سطح مریخ باعث رنگ سرخ آن شده است." },
@@ -26,11 +28,28 @@ export default function App() {
   const [selected, setSelected] = useState<number | null>(null);
   const [answers, setAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(QUESTION_SECONDS);
 
   const score = useMemo(
     () => answers.reduce((total, answer, i) => total + (answer === questions[i].correct ? 1 : 0), 0),
     [answers]
   );
+
+  useEffect(() => {
+    if (!started || finished || selected !== null) return;
+
+    if (timeLeft === 0) {
+      setSelected(-1);
+      setAnswers((current) => [...current, -1]);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setTimeLeft((current) => Math.max(0, current - 1));
+    }, 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [started, finished, selected, timeLeft]);
 
   const choose = (answer: number) => {
     if (selected !== null) return;
@@ -45,6 +64,7 @@ export default function App() {
     }
     setIndex((current) => current + 1);
     setSelected(null);
+    setTimeLeft(QUESTION_SECONDS);
   };
 
   const reset = () => {
@@ -53,6 +73,7 @@ export default function App() {
     setSelected(null);
     setAnswers([]);
     setFinished(false);
+    setTimeLeft(QUESTION_SECONDS);
   };
 
   return (
@@ -75,15 +96,15 @@ export default function App() {
             <div className="game-copy">
               <span className="card-kicker">بازی منتخب</span>
               <h2>BRAIN SPRINT</h2>
-              <p>۱۰ پرسش · دانش عمومی · یک چالش کوتاه</p>
+              <p>۱۰ پرسش · ۱۵ ثانیه برای هر پاسخ</p>
             </div>
             <span className="free-pill">رایگان</span>
           </div>
-          <button className="primary-btn" onClick={() => setStarted(true)}>شروع چالش <span>←</span></button>
+          <button className="primary-btn" onClick={() => { setStarted(true); setTimeLeft(QUESTION_SECONDS); }}>شروع چالش <span>←</span></button>
           <p className="fine-print">بدون شرط‌بندی یا پرداخت ورودی؛ فقط مهارت و یادگیری.</p>
           <div className="feature-row">
             <div><strong>۱۰</strong><span>پرسش</span></div>
-            <div><strong>۱</strong><span>چالش</span></div>
+            <div><strong>۱۵</strong><span>ثانیه برای هر پرسش</span></div>
             <div><strong>۰</strong><span>هزینه ورود</span></div>
           </div>
         </section>
@@ -103,6 +124,11 @@ export default function App() {
             <span className="counter">{index + 1} / ۱۰</span>
           </div>
           <div className="progress-track"><span style={{ width: `${((index + 1) / questions.length) * 100}%` }} /></div>
+          <div className="timer-row">
+            <span>زمان باقی‌مانده</span>
+            <strong className={timeLeft <= 5 ? "timer-urgent" : ""}>{timeLeft} ثانیه</strong>
+          </div>
+          <div className="timer-track"><span className={timeLeft <= 5 ? "timer-low" : ""} style={{ width: `${(timeLeft / QUESTION_SECONDS) * 100}%` }} /></div>
           <p className="question-label">پرسش شماره {index + 1}</p>
           <h2 className="question">{questions[index].prompt}</h2>
           <div className="answers">
@@ -126,7 +152,7 @@ export default function App() {
           </div>
           {selected !== null && (
             <div className="feedback">
-              <strong>{selected === questions[index].correct ? "پاسخ درست بود!" : "این بار درست نبود."}</strong>
+              <strong>{selected === -1 ? "زمان پاسخ‌گویی تمام شد." : selected === questions[index].correct ? "پاسخ درست بود!" : "این بار درست نبود."}</strong>
               <p>{questions[index].note}</p>
               <button className="primary-btn" onClick={next}>{index === 9 ? "دیدن نتیجه" : "پرسش بعدی"} <span>←</span></button>
             </div>
