@@ -1,4 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { readFile } from "node:fs/promises";
+import { extname, resolve, sep } from "node:path";
 import { checkDatabaseConnection, upsertPlayer } from "./database.js";
 import { createPlayerSession, findPlayerBySession, revokePlayerSession } from "./sessions.js";
 import { getLeaderboard, getPlayerProgress, startBrainSprint, submitBrainSprintAnswer } from "./game-sessions.js";
@@ -7,6 +9,64 @@ import { isRateLimited } from "./rate-limit.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
 const MAX_BODY_BYTES = 16 * 1024;
+
+
+const STATIC_MIME_TYPES: Record<string, string> = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".ico": "image/x-icon",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2"
+};
+
+async function serveFrontend(request: IncomingMessage, response: ServerResponse): Promise<boolean> {
+  if (request.method !== "GET" && request.method !== "HEAD") return false;
+  const pathname = new URL(request.url ?? "/", "http://localhost").pathname;
+  if (pathname.startsWith("/api/")) return false;
+
+  let decodedPath: string;
+  try {
+    decodedPath = decodeURIComponent(pathname);
+  } catch {
+    return false;
+  }
+
+  const distRoot = resolve(process.cwd(), "dist");
+  const requestedPath = decodedPath === "/" ? "/index.html" : decodedPath;
+  const filePath = resolve(distRoot, `.${requestedPath}`);
+  if (filePath !== distRoot && !filePath.startsWith(`${distRoot}${sep}`)) return false;
+
+  let content: Buffer;
+  let resolvedPath = filePath;
+  try {
+    content = await readFile(filePath);
+  } catch {
+    if (extname(requestedPath)) return false;
+    resolvedPath = resolve(distRoot, "index.html");
+    try {
+      content = await readFile(resolvedPath);
+    } catch {
+      return false;
+    }
+  }
+
+  const extension = extname(resolvedPath).toLowerCase();
+  const isHtml = extension === ".html";
+  response.writeHead(200, {
+    "content-type": STATIC_MIME_TYPES[extension] ?? "application/octet-stream",
+    "cache-control": isHtml ? "no-cache" : "public, max-age=31536000, immutable",
+    "x-content-type-options": "nosniff"
+  });
+  response.end(request.method === "HEAD" ? undefined : content);
+  return true;
+}
 
 function sendJson(response: ServerResponse, status: number, payload: unknown, extraHeaders: Record<string, string> = {}): void {
   response.writeHead(status, {
@@ -294,6 +354,7 @@ const server = createServer(async (request, response) => {
     return;
   }
 
+  if (await serveFrontend(request, response)) return;
   sendJson(response, 404, { ok: false, error: "NOT_FOUND" });
 });
 
