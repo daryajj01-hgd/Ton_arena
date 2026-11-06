@@ -6,6 +6,7 @@ import { createPlayerSession, findPlayerBySession, revokePlayerSession } from ".
 import { getLeaderboard, getPlayerProgress, startBrainSprint, submitBrainSprintAnswer } from "./game-sessions.js";
 import { validateTelegramInitData } from "./telegram-auth.js";
 import { isRateLimited } from "./rate-limit.js";
+import { runStartupMigrations } from "./auto-migrate.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
 const MAX_BODY_BYTES = 16 * 1024;
@@ -371,7 +372,15 @@ const server = createServer(async (request, response) => {
   sendJson(response, 404, { ok: false, error: "NOT_FOUND" });
 });
 
-server.listen(PORT, "0.0.0.0", () => {
-  process.stdout.write(`TON ARENA API listening on port ${PORT}
-`);
+async function startServer(): Promise<void> {
+  await runStartupMigrations();
+  server.listen(PORT, "0.0.0.0", () => {
+    process.stdout.write(`TON ARENA API listening on port ${PORT}\n`);
+  });
+}
+
+void startServer().catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : "UNKNOWN_STARTUP_ERROR";
+  process.stderr.write(`TON ARENA startup failed: ${message}\n`);
+  process.exitCode = 1;
 });
