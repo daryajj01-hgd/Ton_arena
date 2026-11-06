@@ -80,11 +80,13 @@ Neon is selected as the initial PostgreSQL provider; the project is not yet prov
 
 ### Game engine
 - Server issues a game session and randomized question order. The current server API is `POST /api/games/brain-sprint/start`.
-- The frontend submits answers to `POST /api/games/brain-sprint/:sessionId/answer`; the server owns timing, answer validation, and score updates.
+- The frontend starts a round through `POST /api/games/brain-sprint/start`, receives a randomized question order, and submits each answer to `POST /api/games/brain-sprint/:sessionId/answer`.
+- In a verified Telegram Mini App session, the UI displays the localized question for the server-selected question ID and uses the server response for correctness and score. The browser countdown is only a visual aid; server timestamps enforce the 15-second limit and five-minute round expiry.
+- Outside Telegram, the browser retains a clearly non-authoritative local preview mode.
 - Server validates submitted answers and timing.
 - Score calculation happens server-side.
 - Store per-question answer, correctness, response time, and timestamps to support basic review.
-- The initial question bank is a prototype; because the repository is public, answer-key source must be moved to a protected configuration/data store before a serious competitive release.
+- The initial question bank is a prototype; because the repository is public and localized frontend question data currently includes answer indexes, the answer key must be removed from the client and moved to a protected server-side source before any competitive release.
 
 ### Leaderboards
 - Start with all-time and daily rankings.
