@@ -23,6 +23,9 @@
 - [x] Authenticated profile endpoint (`GET /api/me`) and session revocation endpoint (`POST /api/auth/logout`).
 - [x] Second repeatable SQL migration for player sessions; migration runner applies both schema files.
 - [x] Frontend detects Telegram Mini App launch data, exchanges it for a server session, verifies the session via `/api/me`, and shows the verified player name.
+- [x] Server-side Brain Sprint game-session schema with randomized question order, per-question answer records, server timestamps, and authoritative scoring.
+- [x] Authenticated API routes to start a Brain Sprint round and submit answers; server enforces the 15-second question window and 5-minute round expiry.
+- [x] Unit tests for answer evaluation, invalid answer rejection, and randomized question-order integrity.
 - [x] Frontend session token is kept in memory only; a fresh Telegram launch re-authenticates rather than persisting a bearer token in browser storage.
 - [x] CI runs frontend type-checking, backend compilation, Telegram authentication tests, and frontend production build as separate steps.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
@@ -35,7 +38,8 @@
 - Answers, countdown, and score are handled in the browser only.
 - Neon has been selected, but no Neon project/account has been created or connected and the migration has not been applied. Player persistence is therefore not live yet.
 - Session endpoints are implemented in the API, but they are not yet deployed or end-to-end tested. The frontend does not yet consume the session token. Do not consider authentication production-ready.
-- No database, server-side game sessions/scoring, anti-cheat system, XP persistence, or live leaderboard exists yet.
+- Server-side Brain Sprint session and scoring code is committed but cannot run until Neon is provisioned and all three migrations are applied. The current game question bank is still a prototype and should be moved out of the public repository before competitive public launch.
+- XP persistence, rate limiting, full anti-cheat controls, and live leaderboards do not exist yet.
 - GitHub Actions completed successfully on commit `1d7551a34d91537d26a745b1f4f68a05291b9cab`, including frontend type-check, backend compilation, Telegram auth tests, and frontend production build. This validates the code build, not a live Telegram/Neon deployment.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
 
@@ -45,4 +49,6 @@
 3. Select and connect a PostgreSQL provider; apply the initial player migration.
 4. Configure the Telegram bot token as a server-only secret and test signed Telegram launch data end-to-end.
 5. Verify session flows with a connected database and Telegram Mini App, then integrate frontend session handling.
-6. Add server-issued game sessions and server-side scoring.
+6. Connect Neon and apply migrations 001–003; exercise authenticated game start/answer flows against the live API.
+7. Move the question bank to a protected source, then connect the frontend game flow to server-issued sessions and authoritative results.
+8. Add XP persistence and leaderboards.
