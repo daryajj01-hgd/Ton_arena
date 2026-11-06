@@ -49,7 +49,7 @@ export default function App() {
       try {
         const auth = await authenticateTelegram(webApp.initData);
         const profile = await getCurrentPlayer(auth.session.token);
-        if (!cancelled) setPlayerName(profile.player.firstName ?? profile.player.username ?? null);
+        if (!cancelled) {\n          setSessionToken(auth.session.token);\n          setPlayerName(profile.player.firstName ?? profile.player.username ?? null);\n        }
       } catch {
         if (!cancelled) setPlayerName(null);
       } finally {
@@ -151,7 +151,6 @@ export default function App() {
     setStarted(false);
     setIndex(0);
     setSelected(null);
-    setAnswers([]);
     setFinished(false);
     setTimeLeft(QUESTION_SECONDS);
     setGameSessionId(null);
