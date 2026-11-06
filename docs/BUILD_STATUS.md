@@ -36,7 +36,7 @@
 - Neon has been selected, but no Neon project/account has been created or connected and the migration has not been applied. Player persistence is therefore not live yet.
 - Session endpoints are implemented in the API, but they are not yet deployed or end-to-end tested. The frontend does not yet consume the session token. Do not consider authentication production-ready.
 - No database, server-side game sessions/scoring, anti-cheat system, XP persistence, or live leaderboard exists yet.
-- The production build, backend compilation, and authentication tests have not yet been confirmed by a completed GitHub Actions run. CI has separate steps so a failing stage is identifiable.
+- GitHub Actions completed successfully on commit `1d7551a34d91537d26a745b1f4f68a05291b9cab`, including frontend type-check, backend compilation, Telegram auth tests, and frontend production build. This validates the code build, not a live Telegram/Neon deployment.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
 
 ## Next milestone
