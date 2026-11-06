@@ -4,27 +4,24 @@
 
 ## Completed in repository
 - [x] Vite + React + TypeScript project scaffold.
-- [x] React plugin and TypeScript type dependencies configured.
-- [x] English-first, left-to-right responsive interface.
-- [x] BRAIN SPRINT 10-question English frontend prototype.
-- [x] 15-second countdown for each question.
-- [x] Automatic unanswered-question handling when time expires.
-- [x] Local answer feedback and end-of-round score screen.
-- [x] Git ignore rules for dependencies, build output, and environment secrets.
+- [x] English-first responsive interface.
+- [x] Initial internationalization foundation with a language selector.
+- [x] 11 initial languages: English, Persian, Arabic, Spanish, French, German, Turkish, Russian, Simplified Chinese, Hindi, and Portuguese.
+- [x] Localized BRAIN SPRINT interface, questions, answers, and explanations in all 11 initial languages.
+- [x] Automatic left-to-right and right-to-left layout direction.
+- [x] 15-second countdown, timeout handling, answer feedback, and local score screen.
 
 ## Important limitations
 - This is a frontend prototype only.
-- Answers, countdown, and score are currently handled in the browser for demonstration.
+- Language choice is currently session-local and resets on page reload.
+- Translations are initial product copy and should receive native-speaker review before public launch.
+- The 11-language foundation is extensible; it does not mean every world language has been added.
+- Answers, countdown, and score are handled in the browser only.
 - No backend, persistent accounts, Telegram authentication, database, anti-cheat validation, XP persistence, or live leaderboard exists yet.
-- No cloud preview or production build has been run and verified yet.
+- No production build has been run and verified.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
 
-## Development environment decision
-- Replit sign-in encountered a phone/identity verification issue.
-- StackBlitz was opened successfully by the user; an initial blank preview was reported, then the app became visible.
-- Keep GitHub as the source of truth. StackBlitz is a preview/development environment, not a replacement for repository version control.
-
-## Next implementation milestone
-1. Verify the English interface and timer in the Android browser preview.
-2. Fix any build or usability issues found in the preview.
-3. Implement backend and server-side Telegram Mini App authentication before treating player identity or scores as trusted.
+## Next milestone
+1. Verify language switching and RTL/LTR rendering on mobile.
+2. Persist language preference and prepare translation QA workflow.
+3. Implement backend and server-side Telegram Mini App authentication before trusting player identity or scores.
