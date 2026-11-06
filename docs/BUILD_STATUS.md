@@ -13,7 +13,7 @@
 
 ## Important limitations
 - This is a frontend prototype only.
-- Language choice is currently session-local and resets on page reload.
+- Language preference is now saved in browser localStorage and should survive page reloads on the same browser/device; this has been verified in source code but not yet tested in a live browser.
 - Translations are initial product copy and should receive native-speaker review before public launch.
 - The 11-language foundation is extensible; it does not mean every world language has been added.
 - Answers, countdown, and score are handled in the browser only.
@@ -23,5 +23,5 @@
 
 ## Next milestone
 1. Verify language switching and RTL/LTR rendering on mobile.
-2. Persist language preference and prepare translation QA workflow.
+2. Test saved language preference and prepare translation QA workflow.
 3. Implement backend and server-side Telegram Mini App authentication before trusting player identity or scores.
