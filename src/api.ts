@@ -67,6 +67,9 @@ export type BrainSprintAnswer = {
   answeredQuestionIndex: number;
   completed: boolean;
   nextQuestionIndex: number;
+  xpEarned: number;
+  totalXp: number | null;
+  level: number | null;
 };
 
 export async function submitBrainSprintAnswer(
@@ -82,4 +85,19 @@ export async function submitBrainSprintAnswer(
       body: JSON.stringify({ answerIndex })
     }
   );
+}
+
+export type PlayerProgress = {
+  xp: number;
+  level: number;
+  gamesPlayed: number;
+  totalCorrect: number;
+  bestScore: number;
+};
+
+export async function getPlayerProgress(sessionToken: string): Promise<{ ok: true; progress: PlayerProgress }> {
+  return apiRequest<{ ok: true; progress: PlayerProgress }>("/api/progress", {
+    method: "GET",
+    headers: { authorization: `Bearer ${sessionToken}` }
+  });
 }
