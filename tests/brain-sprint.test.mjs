@@ -10,7 +10,7 @@ import {
   getBrainSprintAnswerKey
 } from "../dist-server/brain-sprint.js";
 
-const TEST_ANSWER_KEY = [1, 2, 2, 1, 2, 1, 2, 2, 2, 1];
+const TEST_ANSWER_KEY = [0, 1, 2, 3, 0, 1, 2, 3, 0, 1];
 
 test("question order contains every question exactly once", () => {
   const order = createBrainSprintQuestionOrder(() => 0.37);
