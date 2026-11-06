@@ -16,6 +16,9 @@
 - [x] Initial PostgreSQL player-table migration and database connection/persistence module.
 - [x] Telegram identity verification now upserts the verified player record when the database is configured.
 - [x] Separate `/health` liveness and `/ready` database-readiness endpoints.
+- [x] Neon selected as the initial managed PostgreSQL provider; setup and secret-handling guide added.
+- [x] Repeatable database migration runner and `npm run db:migrate` command.
+- [x] `.env.example` documents required server-only environment variable names without real credentials.
 - [x] CI runs frontend type-checking, backend compilation, Telegram authentication tests, and frontend production build as separate steps.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
 
@@ -25,7 +28,7 @@
 - Translations are initial product copy and should receive native-speaker review before public launch.
 - The 11-language foundation is extensible; it does not mean every world language has been added.
 - Answers, countdown, and score are handled in the browser only.
-- The PostgreSQL schema and persistence code are committed, but no database provider has been connected and the migration has not been applied. Player persistence is therefore not live yet.
+- Neon has been selected, but no Neon project/account has been created or connected and the migration has not been applied. Player persistence is therefore not live yet.
 - The API does not yet issue secure player sessions; Telegram identity verification is not yet a complete login/session system.
 - No database, server-side game sessions/scoring, anti-cheat system, XP persistence, or live leaderboard exists yet.
 - The production build, backend compilation, and authentication tests have not yet been confirmed by a completed GitHub Actions run. CI has separate steps so a failing stage is identifiable.
