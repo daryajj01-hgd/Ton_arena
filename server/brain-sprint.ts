@@ -44,3 +44,15 @@ export function createBrainSprintQuestionOrder(random: () => number = Math.rando
   }
   return order;
 }
+
+export function calculateBrainSprintXp(score: number): number {
+  if (!Number.isInteger(score) || score < 0 || score > BRAIN_SPRINT_QUESTION_COUNT) {
+    throw new Error("INVALID_BRAIN_SPRINT_SCORE");
+  }
+  return 10 + score * 5;
+}
+
+export function getPlayerLevelFromXp(xp: number): number {
+  if (!Number.isInteger(xp) || xp < 0) throw new Error("INVALID_PLAYER_XP");
+  return Math.floor(xp / 100) + 1;
+}
