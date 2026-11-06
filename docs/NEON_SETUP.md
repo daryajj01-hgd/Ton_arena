@@ -43,3 +43,7 @@ Configure automated backups/restore expectations, review data retention and dele
 ## Question-bank security note
 
 The current localized question prompts and choices are shipped to the client, but answer indexes are no longer included in the current frontend bundle or server source. The answer key is loaded only from `BRAIN_SPRINT_ANSWER_KEY`. Earlier public Git commits contained the prototype answer indexes, so this exact prototype question set must be replaced with a fresh question bank before any competitive public launch; moving the current key to a secret alone does not erase its historical exposure.
+
+## Current Neon Free-plan reference
+
+As of November 2026, Neon lists 1 GB Postgres storage, 100 CU-hours per project per month, autoscaling up to 2 CU, and 10 branches per project on its Free plan. These limits are appropriate for a small prototype, not a guarantee of production capacity; monitor usage and review Neon's current plan page before inviting larger groups. See [Neon's October 2026 Free-plan update](https://neon.com/blog/neon-free-plan-1-gb-per-project).
