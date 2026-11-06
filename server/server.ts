@@ -79,6 +79,19 @@ function sendJson(response: ServerResponse, status: number, payload: unknown, ex
 }
 
 
+
+function getClientIp(request: IncomingMessage): string {
+  if (process.env.TRUST_PROXY === "true") {
+    const forwardedFor = request.headers["x-forwarded-for"];
+    if (typeof forwardedFor === "string") {
+      const forwardedIps = forwardedFor.split(",").map((value) => value.trim()).filter(Boolean);
+      const trustedProxyClientIp = forwardedIps.at(-1);
+      if (trustedProxyClientIp && trustedProxyClientIp.length <= 128) return trustedProxyClientIp;
+    }
+  }
+  return request.socket.remoteAddress ?? "unknown";
+}
+
 function rejectIfRateLimited(
   response: ServerResponse,
   key: string,
@@ -124,7 +137,7 @@ const server = createServer(async (request, response) => {
   }
 
   if (request.method === "POST" && request.url === "/api/auth/telegram") {
-    if (rejectIfRateLimited(response, `auth:${request.socket.remoteAddress ?? "unknown"}`, 10, 60_000)) return;
+    if (rejectIfRateLimited(response, `auth:${getClientIp(request)}`, 10, 60_000)) return;
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     if (!botToken) {
       sendJson(response, 503, { ok: false, error: "TELEGRAM_AUTH_NOT_CONFIGURED" });
