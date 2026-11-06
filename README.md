@@ -48,10 +48,8 @@ node dist-server/migrate.js
 Use /health for process health and /ready for database readiness. Do not bake secrets into the Docker image or build arguments. The current rate limiter is in-memory and intended for a single API instance; use a shared Redis-backed limiter before scaling horizontally.
 
 
-## Render staging deployment
+## Cloudflare Workers deployment (current target)
 
-A Render Blueprint is included in `render.yaml`. After creating a Neon project, connect this GitHub repository to Render and create a Blueprint from the repository. Render will prompt for the three secret values defined with `sync: false`: `DATABASE_URL`, `TELEGRAM_BOT_TOKEN`, and `BRAIN_SPRINT_ANSWER_KEY`.
+The current deployment target is Cloudflare Workers Free with static assets and Cloudflare Hyperdrive connected to the existing Neon PostgreSQL database. The Worker adapter lives in `worker/index.ts`; its configuration is `wrangler.jsonc`; deployment is managed by `.github/workflows/cloudflare-deploy.yml`. Follow [Cloudflare deployment setup](docs/CLOUDFLARE_DEPLOYMENT.md). Do not enable paid Cloudflare services if the project must remain at $0.
 
-The Blueprint selects the Free web-service plan in Frankfurt, uses `/health` for health checks, and waits for GitHub checks before automatic deploys. It enables `AUTO_MIGRATE=true`, so the service applies the five idempotent SQL migrations before listening. This startup-migration setting is intended only for this single-instance staging setup; disable it and use a controlled migration job before scaling.
-
-Important: Render's Free web services spin down after 15 minutes without traffic and typically take about a minute to wake. Render explicitly describes Free instances as unsuitable for production. Use this only for private testing/early alpha, with Neon as the persistent database; do not use Render's Free Postgres because it expires after 30 days. See [Render free-instance limits](https://render.com/docs/free) and [Render deployment guide](https://render.com/docs/your-first-deploy).
+The previous Render Blueprint in `render.yaml` is retained only as an inactive alternative. It has not been applied and should not be used for the current deployment.
