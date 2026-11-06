@@ -3,17 +3,33 @@ import { checkDatabaseConnection, upsertPlayer } from "./database.js";
 import { createPlayerSession, findPlayerBySession, revokePlayerSession } from "./sessions.js";
 import { getLeaderboard, getPlayerProgress, startBrainSprint, submitBrainSprintAnswer } from "./game-sessions.js";
 import { validateTelegramInitData } from "./telegram-auth.js";
+import { isRateLimited } from "./rate-limit.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
 const MAX_BODY_BYTES = 16 * 1024;
 
-function sendJson(response: ServerResponse, status: number, payload: unknown): void {
+function sendJson(response: ServerResponse, status: number, payload: unknown, extraHeaders: Record<string, string> = {}): void {
   response.writeHead(status, {
     "content-type": "application/json; charset=utf-8",
     "cache-control": "no-store",
-    "x-content-type-options": "nosniff"
+    "x-content-type-options": "nosniff",
+    ...extraHeaders
   });
   response.end(JSON.stringify(payload));
+}
+
+
+function rejectIfRateLimited(
+  response: ServerResponse,
+  key: string,
+  maximumRequests: number,
+  windowMs: number
+): boolean {
+  if (!isRateLimited(key, maximumRequests, windowMs)) return false;
+  sendJson(response, 429, { ok: false, error: "RATE_LIMITED" }, {
+    "retry-after": String(Math.ceil(windowMs / 1000))
+  });
+  return true;
 }
 
 async function readJsonBody(request: IncomingMessage): Promise<unknown> {
@@ -48,6 +64,7 @@ const server = createServer(async (request, response) => {
   }
 
   if (request.method === "POST" && request.url === "/api/auth/telegram") {
+    if (rejectIfRateLimited(response, `auth:${request.socket.remoteAddress ?? "unknown"}`, 10, 60_000)) return;
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     if (!botToken) {
       sendJson(response, 503, { ok: false, error: "TELEGRAM_AUTH_NOT_CONFIGURED" });
@@ -126,6 +143,7 @@ const server = createServer(async (request, response) => {
         sendJson(response, 401, { ok: false, error: "SESSION_INVALID_OR_EXPIRED" });
         return;
       }
+      if (rejectIfRateLimited(response, `profile:${player.id}`, 60, 60_000)) return;
       sendJson(response, 200, {
         ok: true,
         player: {
@@ -154,6 +172,7 @@ const server = createServer(async (request, response) => {
         sendJson(response, 401, { ok: false, error: "SESSION_INVALID_OR_EXPIRED" });
         return;
       }
+      if (rejectIfRateLimited(response, `progress:${player.id}`, 60, 60_000)) return;
       const progress = await getPlayerProgress(player.id);
       sendJson(response, 200, { ok: true, progress });
     } catch {
@@ -175,6 +194,7 @@ const server = createServer(async (request, response) => {
         sendJson(response, 401, { ok: false, error: "SESSION_INVALID_OR_EXPIRED" });
         return;
       }
+      if (rejectIfRateLimited(response, `leaderboard:${player.id}`, 30, 60_000)) return;
       const leaderboard = await getLeaderboard(10);
       sendJson(response, 200, { ok: true, leaderboard });
     } catch {
@@ -212,6 +232,7 @@ const server = createServer(async (request, response) => {
         sendJson(response, 401, { ok: false, error: "SESSION_INVALID_OR_EXPIRED" });
         return;
       }
+      if (rejectIfRateLimited(response, `game-start:${player.id}`, 5, 60_000)) return;
       const game = await startBrainSprint(player.id);
       sendJson(response, 201, { ok: true, game });
     } catch {
@@ -236,6 +257,7 @@ const server = createServer(async (request, response) => {
         sendJson(response, 401, { ok: false, error: "SESSION_INVALID_OR_EXPIRED" });
         return;
       }
+      if (rejectIfRateLimited(response, `game-answer:${player.id}`, 30, 60_000)) return;
       const body = await readJsonBody(request);
       if (
         typeof body !== "object" ||
