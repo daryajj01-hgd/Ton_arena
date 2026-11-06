@@ -116,6 +116,7 @@ export async function submitBrainSprintAnswer(input: {
       let totalXp: number | null = null;
       let level: number | null = null;
       let dailyStreak: number | null = null;
+      let dailyMissionCompleteToday = false;
       if (completed) {
         const progressResult = await client.query<{
           xp: number;
@@ -130,6 +131,7 @@ export async function submitBrainSprintAnswer(input: {
         );
         totalXp = progressResult.rows[0]?.xp ?? 0;
         dailyStreak = progressResult.rows[0]?.daily_streak ?? 0;
+        dailyMissionCompleteToday = progressResult.rows[0]?.daily_mission_complete_today ?? false;
         level = getPlayerLevelFromXp(totalXp);
       }
       await client.query("COMMIT");
@@ -145,7 +147,7 @@ export async function submitBrainSprintAnswer(input: {
         totalXp,
         level,
         dailyStreak,
-        dailyMissionCompleteToday: completed ? (progressResult.rows[0]?.daily_mission_complete_today ?? false) : false
+        dailyMissionCompleteToday
       };
     }
     if (session.status === "completed" || input.questionIndex !== session.current_question_index) {
