@@ -50,7 +50,8 @@ export default function App() {
         const auth = await authenticateTelegram(webApp.initData);
         const profile = await getCurrentPlayer(auth.session.token);
         if (!cancelled) {
-          setSessionToken(auth.session.token);\n          setPlayerName(profile.player.firstName ?? profile.player.username ?? null);
+          setSessionToken(auth.session.token);
+          setPlayerName(profile.player.firstName ?? profile.player.username ?? null);
         }
       } catch {
         if (!cancelled) setPlayerName(null);
