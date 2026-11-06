@@ -220,6 +220,11 @@ const server = createServer(async (request, response) => {
         typeof body !== "object" ||
         body === null ||
         !("answerIndex" in body) ||
+        !("questionIndex" in body) ||
+        typeof body.questionIndex !== "number" ||
+        !Number.isInteger(body.questionIndex) ||
+        body.questionIndex < 0 ||
+        body.questionIndex >= 10 ||
         typeof body.answerIndex !== "number" ||
         !Number.isInteger(body.answerIndex) ||
         body.answerIndex < -1 ||
@@ -231,6 +236,7 @@ const server = createServer(async (request, response) => {
       const result = await submitBrainSprintAnswer({
         playerId: player.id,
         sessionId: answerRoute[1],
+        questionIndex: body.questionIndex,
         answerIndex: body.answerIndex
       });
       const statusCode = result.status === "not_found" ? 404
