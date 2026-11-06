@@ -201,7 +201,8 @@ export default function App() {
             <span className="free-pill">{t.free}</span>
           </div>
           <button className="primary-btn" onClick={() => { void startGame(); }}>{t.start} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
-          <p className="fine-print">{t.noBetting}</p>\n          {gameError && <p className="game-error" role="alert">{gameError}</p>}
+          <p className="fine-print">{t.noBetting}</p>
+          {gameError && <p className="game-error" role="alert">{gameError}</p>}
           <div className="feature-row">
             <div><strong>10</strong><span>{t.questionsLabel}</span></div>
             <div><strong>15</strong><span>{t.secondsEach}</span></div>
