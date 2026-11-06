@@ -4,7 +4,14 @@ import { localeOptions, translations, type Locale } from "./i18n";
 const QUESTION_SECONDS = 15;
 
 export default function App() {
-  const [language, setLanguage] = useState<Locale>("en");
+  const [language, setLanguage] = useState<Locale>(() => {
+    try {
+      const saved = window.localStorage.getItem("ton-arena-language");
+      return saved && localeOptions.some((item) => item.code === saved) ? (saved as Locale) : "en";
+    } catch {
+      return "en";
+    }
+  });
   const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -62,7 +69,13 @@ export default function App() {
   };
 
   const changeLanguage = (value: string) => {
-    setLanguage(value as Locale);
+    const nextLanguage = value as Locale;
+    setLanguage(nextLanguage);
+    try {
+      window.localStorage.setItem("ton-arena-language", nextLanguage);
+    } catch {
+      // Language preference remains available for the current session.
+    }
     reset();
   };
 
