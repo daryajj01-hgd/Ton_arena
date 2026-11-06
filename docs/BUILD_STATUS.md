@@ -22,6 +22,8 @@
 - [x] Opaque seven-day player sessions with cryptographically random tokens and hashed database storage.
 - [x] Authenticated profile endpoint (`GET /api/me`) and session revocation endpoint (`POST /api/auth/logout`).
 - [x] Second repeatable SQL migration for player sessions; migration runner applies both schema files.
+- [x] Frontend detects Telegram Mini App launch data, exchanges it for a server session, verifies the session via `/api/me`, and shows the verified player name.
+- [x] Frontend session token is kept in memory only; a fresh Telegram launch re-authenticates rather than persisting a bearer token in browser storage.
 - [x] CI runs frontend type-checking, backend compilation, Telegram authentication tests, and frontend production build as separate steps.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
 
