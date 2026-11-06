@@ -17,7 +17,7 @@
 4. Set it as the server-side environment variable `DATABASE_URL`. Use Neon’s SSL-enabled connection string.
 5. Set `TELEGRAM_BOT_TOKEN` only as a server-side secret when Telegram authentication is ready.
 6. Set `BRAIN_SPRINT_ANSWER_KEY` as a server-only JSON array containing ten correct option indexes (each from 0 to 3). Never use a `VITE_` prefix or expose this value to the frontend. The game start endpoint fails closed if this secret is missing or invalid.
-7. Run `npm run db:migrate` from the repository root. This applies the player, player-session, game-session, and player-progress tables; the SQL uses `IF NOT EXISTS` and can be safely re-run.
+7. Run `npm run db:migrate` from the repository root. This applies the player, player-session, game-session, and player-progress and daily mission tracking tables; the SQL uses `IF NOT EXISTS` and can be safely re-run.
 8. Start the API and check `GET /ready`. It should return HTTP 200 only when PostgreSQL is reachable.
 
 ## Environment variables
@@ -32,7 +32,7 @@ See [`.env.example`](../.env.example) for names and placeholder formats. Set `VI
 - `/health` checks whether the API process is alive.
 - `/ready` checks whether the database is reachable.
 - Player sessions are seven-day opaque tokens; only SHA-256 hashes are stored. `GET /api/me` checks a session and `POST /api/auth/logout` revokes it.
-- Player progression is stored in `player_progress`; completing a round awards 10 XP plus 5 XP per correct answer, with a level increase every 100 XP. `GET /api/progress` returns saved totals.
+- Player progression is stored in `player_progress`; completing a round awards 10 XP plus 5 XP per correct answer, with a level increase every 100 XP. The first completed round each UTC day adds a 20 XP daily mission bonus and updates the consecutive-day streak. `GET /api/progress` returns saved totals and daily mission state.
 - Brain Sprint game rounds are created by `POST /api/games/brain-sprint/start`; submit each selected answer to `POST /api/games/brain-sprint/:sessionId/answer` using the session bearer token.
 
 ## Before real users
