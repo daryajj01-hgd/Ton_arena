@@ -3,6 +3,8 @@ import test from "node:test";
 import {
   BRAIN_SPRINT_QUESTION_COUNT,
   createBrainSprintQuestionOrder,
+  calculateBrainSprintXp,
+  getPlayerLevelFromXp,
   evaluateBrainSprintAnswer,
   getBrainSprintAnswerKey
 } from "../dist-server/brain-sprint.js";
@@ -43,4 +45,19 @@ test("answer key is read from server environment and validated", () => {
     if (original === undefined) delete process.env.BRAIN_SPRINT_ANSWER_KEY;
     else process.env.BRAIN_SPRINT_ANSWER_KEY = original;
   }
+});
+
+test("completed rounds award participation and performance XP", () => {
+  assert.equal(calculateBrainSprintXp(0), 10);
+  assert.equal(calculateBrainSprintXp(5), 35);
+  assert.equal(calculateBrainSprintXp(10), 60);
+  assert.throws(() => calculateBrainSprintXp(11), /INVALID/);
+});
+
+test("player levels advance for each 100 XP", () => {
+  assert.equal(getPlayerLevelFromXp(0), 1);
+  assert.equal(getPlayerLevelFromXp(99), 1);
+  assert.equal(getPlayerLevelFromXp(100), 2);
+  assert.equal(getPlayerLevelFromXp(250), 3);
+  assert.throws(() => getPlayerLevelFromXp(-1), /INVALID/);
 });
