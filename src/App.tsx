@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { localeOptions, translations, type Locale } from "./i18n";
-import { authenticateTelegram, getCurrentPlayer, startBrainSprint, submitBrainSprintAnswer } from "./api";
+import { authenticateTelegram, getCurrentPlayer, getPlayerProgress, startBrainSprint, submitBrainSprintAnswer, type PlayerProgress } from "./api";
 
 const QUESTION_SECONDS = 15;
 
@@ -19,6 +19,8 @@ export default function App() {
   const [finished, setFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(QUESTION_SECONDS);
   const [playerName, setPlayerName] = useState<string | null>(null);
+  const [playerProgress, setPlayerProgress] = useState<PlayerProgress | null>(null);
+  const [xpEarned, setXpEarned] = useState(0);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [gameSessionId, setGameSessionId] = useState<string | null>(null);
   const [questionOrder, setQuestionOrder] = useState<number[]>(Array.from({ length: 10 }, (_, i) => i));
@@ -53,6 +55,12 @@ export default function App() {
           setSessionToken(auth.session.token);
           setPlayerName(profile.player.firstName ?? profile.player.username ?? null);
         }
+        try {
+          const progress = await getPlayerProgress(auth.session.token);
+          if (!cancelled) setPlayerProgress(progress.progress);
+        } catch {
+          // Authentication remains valid even if the optional progress read fails.
+        }
       } catch {
         if (!cancelled) setPlayerName(null);
       } finally {
@@ -77,6 +85,16 @@ export default function App() {
         setServerScore(response.result.score);
         setServerCorrect(response.result.isCorrect);
         setServerCorrectAnswer(response.result.correctAnswerIndex);
+        if (response.result.completed) {
+          setXpEarned(response.result.xpEarned);
+          setPlayerProgress((current) => ({
+            xp: response.result.totalXp ?? current?.xp ?? 0,
+            level: response.result.level ?? current?.level ?? 1,
+            gamesPlayed: (current?.gamesPlayed ?? 0) + 1,
+            totalCorrect: (current?.totalCorrect ?? 0) + response.result.score,
+            bestScore: Math.max(current?.bestScore ?? 0, response.result.score)
+          }));
+        }
       } else {
         setServerCorrect(null);
         setServerCorrectAnswer(null);
@@ -111,6 +129,7 @@ export default function App() {
     setFinished(false);
     setTimeLeft(QUESTION_SECONDS);
     setServerScore(0);
+    setXpEarned(0);
     setServerCorrect(null);
     setServerCorrectAnswer(null);
     setQuestionOrder(Array.from({ length: 10 }, (_, i) => i));
@@ -187,6 +206,7 @@ export default function App() {
             {localeOptions.map((item) => <option key={item.code} value={item.code}>{item.label}</option>)}
           </select>
           {playerName && <span className="player-chip" title="Signed in with Telegram">{playerName}</span>}
+          {playerProgress && <span className="progress-chip" title="Your saved progress">LV {playerProgress.level} · {playerProgress.xp} XP</span>}
           <span className="top-tag">{t.beta}</span>
         </div>
       </header>
@@ -221,6 +241,7 @@ export default function App() {
           <h1>{t.great}</h1>
           <div className="score-number">{serverGame ? score : "—"}{serverGame && <small> / 10</small>}</div>
           <p className="intro">{serverGame ? "Your score has been verified by the TON ARENA server." : t.localScore}</p>
+          {serverGame && <p className="xp-earned">+{xpEarned} XP earned · Total {playerProgress?.xp ?? xpEarned} XP</p>}
           <button className="primary-btn" onClick={reset}>{t.home} <span>{locale.dir === "rtl" ? "←" : "→"}</span></button>
         </section>
       ) : (
