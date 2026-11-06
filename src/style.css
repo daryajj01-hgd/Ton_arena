@@ -70,3 +70,8 @@ h1 span{color:#55e0bd}
 .leaderboard-level{color:#91a6bf;white-space:nowrap}
 .leaderboard-row b{color:#70e2c7;white-space:nowrap;direction:ltr}
 @media(max-width:420px){.leaderboard-row{grid-template-columns:26px minmax(0,1fr) auto auto;gap:7px;font-size:10px}.leaderboard-card{padding:14px}}
+
+.daily-mission-card{display:grid;grid-template-columns:1fr auto;gap:7px 12px;margin:18px 0 8px;padding:14px 16px;text-align:start;background:#55e0bd0b;border:1px solid #55e0bd33;border-radius:14px}
+.daily-mission-card strong{grid-column:1/-1;color:#6fdcc2;font-size:10px;letter-spacing:.7px}
+.daily-mission-card span{color:#a9bbcf;font-size:11px;line-height:1.6}
+.daily-mission-card b{color:#70e2c7;font-size:11px;white-space:nowrap;direction:ltr}
