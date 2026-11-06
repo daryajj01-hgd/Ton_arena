@@ -10,7 +10,8 @@ async function main(): Promise<void> {
 
   const migrationFiles = [
     "001_create_players.sql",
-    "002_create_player_sessions.sql"
+    "002_create_player_sessions.sql",
+    "003_create_game_sessions.sql"
   ];
   const pool = new Pool({
     connectionString,
