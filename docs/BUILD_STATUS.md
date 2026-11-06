@@ -37,7 +37,7 @@
 - [x] Basic API rate limiting: 10 Telegram auth attempts per IP/minute, 5 game starts per player/minute, 30 answers per player/minute, and bounded read-route limits.
 - [x] Node API serves the built frontend from the same origin, with SPA fallback and safe static path resolution.
 - [x] Multi-stage Dockerfile packages the frontend, API, and migrations without embedding environment secrets.
-- [x] CI verifies frontend type-checking, backend compilation, tests, frontend build, and production Docker image.
+- [x] CI verifies frontend type-checking, backend compilation, tests, frontend build, Docker image build, and container smoke tests for `/health` plus the served frontend.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
 
 ## Important limitations
@@ -46,11 +46,11 @@
 - Translations are initial product copy and should receive native-speaker review before public launch.
 - The 11-language foundation is extensible; it does not mean every world language has been added.
 - In a verified Telegram Mini App session, submitted answers and score are processed by the server; the browser timer is a display aid and the server enforces the question and round deadlines. Outside Telegram, the app still offers a local preview.
-- Neon has been selected, but no Neon project/account has been created or connected and the migration has not been applied. Player persistence is therefore not live yet.
+- Neon has been selected, but no Neon project/account has been created or connected and migrations 001–005 have not been applied. Player persistence is therefore not live yet.
 - Frontend Telegram sign-in and server game API integration are implemented in source. They still need a live Mini App end-to-end test against a provisioned database and deployed API. Do not consider authentication production-ready.
 - Server-side Brain Sprint sessions, scoring, XP, daily mission, and leaderboard code passed GitHub Actions. These features cannot run against real players until Neon is provisioned and all five migrations are applied. Earlier public commits exposed the prototype answer indexes, so this question set must be replaced before competitive public launch.
 - XP, daily mission, and leaderboard features are implemented in code but are not live until Neon is connected and migrations are applied. Basic in-memory limits now protect Telegram auth and player/game endpoints; distributed rate limiting and full anti-cheat controls remain outstanding.
-- GitHub Actions completed successfully on commit `252a35c51e37aa6a13160da49dafa54ece3fef54`, including frontend type-check, backend compilation, Telegram auth/game logic tests, and frontend production build. This validates the code build, not a live Telegram/Neon deployment.
+- GitHub Actions completed successfully on commit `42d9ea2b7ad19f12864bda11ac7d9036259300db`, including frontend type-check, backend compilation, all automated tests, Docker image build, and container smoke tests for the health endpoint and frontend. This validates the container build, not a live Telegram/Neon deployment.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
 
 ## Next milestone
@@ -58,5 +58,5 @@
 2. Configure the Telegram bot token and `BRAIN_SPRINT_ANSWER_KEY` as server-only secrets, then deploy the API.
 3. Test Telegram sign-in, full Brain Sprint rounds, XP, daily mission, and leaderboard against the live database.
 4. Replace the prototype question bank with fresh questions and protected answer keys before competitive launch.
-5. Add rate limiting, stronger anti-cheat controls, and operational monitoring.
+5. Replace process-local rate limiting with shared Redis-backed limits before scaling; add stronger anti-cheat controls and operational monitoring.
 6. Verify language switching, RTL/LTR, and accessibility on real mobile devices.
