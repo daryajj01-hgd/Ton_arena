@@ -12,7 +12,7 @@
 - [x] 15-second countdown, timeout handling, answer feedback, and local score screen.
 - [x] Initial Node.js API skeleton with health endpoint.
 - [x] Server-side Telegram Mini App initData signature and freshness validation endpoint.
-- [x] Automated GitHub Actions production-build workflow.
+- [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
 
 ## Important limitations
 - This is a frontend prototype only.
@@ -22,7 +22,7 @@
 - Answers, countdown, and score are handled in the browser only.
 - The API currently validates Telegram initData but does not yet create persistent accounts or server sessions.
 - No database, server-side game sessions/scoring, anti-cheat system, XP persistence, or live leaderboard exists yet.
-- The production build has not yet been confirmed by a completed GitHub Actions run.
+- The production build and backend compilation have not yet been confirmed by a completed GitHub Actions run. CI has been split into separate steps so the failing stage is identifiable.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
 
 ## Next milestone
