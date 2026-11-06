@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { Pool } from "pg";
+import { MIGRATION_FILES } from "./migration-files.js";
 
 async function main(): Promise<void> {
   const connectionString = process.env.DATABASE_URL;
@@ -8,13 +9,6 @@ async function main(): Promise<void> {
     throw new Error("DATABASE_NOT_CONFIGURED: set DATABASE_URL before running migrations");
   }
 
-  const migrationFiles = [
-    "001_create_players.sql",
-    "002_create_player_sessions.sql",
-    "003_create_game_sessions.sql",
-    "004_create_player_progress.sql",
-    "005_add_daily_mission_progress.sql"
-  ];
   const pool = new Pool({
     connectionString,
     max: 1,
@@ -22,7 +16,7 @@ async function main(): Promise<void> {
   });
 
   try {
-    for (const fileName of migrationFiles) {
+    for (const fileName of MIGRATION_FILES) {
       const migrationPath = resolve(process.cwd(), "db/migrations", fileName);
       const sql = await readFile(migrationPath, "utf8");
       await pool.query(sql);
