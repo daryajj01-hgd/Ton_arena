@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { localeOptions, translations, type Locale } from "./i18n";
+import { authenticateTelegram, getCurrentPlayer } from "./api";
 
 const QUESTION_SECONDS = 15;
 
@@ -18,6 +19,7 @@ export default function App() {
   const [answers, setAnswers] = useState<number[]>([]);
   const [finished, setFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(QUESTION_SECONDS);
+  const [playerName, setPlayerName] = useState<string | null>(null);
 
   const t = translations[language];
   const locale = localeOptions.find((item) => item.code === language)!;
@@ -90,6 +92,7 @@ export default function App() {
           <select className="language-select" aria-label="Choose language" value={language} onChange={(event) => changeLanguage(event.target.value)}>
             {localeOptions.map((item) => <option key={item.code} value={item.code}>{item.label}</option>)}
           </select>
+          {playerName && <span className="player-chip" title="Signed in with Telegram">{playerName}</span>}
           <span className="top-tag">{t.beta}</span>
         </div>
       </header>
