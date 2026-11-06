@@ -17,7 +17,7 @@
 4. Set it as the server-side environment variable `DATABASE_URL`. Use Neon’s SSL-enabled connection string.
 5. Set `TELEGRAM_BOT_TOKEN` only as a server-side secret when Telegram authentication is ready.
 6. Set `BRAIN_SPRINT_ANSWER_KEY` as a server-only JSON array containing ten correct option indexes (each from 0 to 3). Never use a `VITE_` prefix or expose this value to the frontend. The game start endpoint fails closed if this secret is missing or invalid.
-7. After deployment, run `node dist-server/migrate.js` from the application container (or `npm run db:migrate` from the repository root during development). This applies migrations 001–005: player, player-session, game-session, player-progress, and daily mission tracking schema. The SQL uses `IF NOT EXISTS` and can be safely re-run.
+7. The Render staging Blueprint sets `AUTO_MIGRATE=true`, so the service applies migrations before accepting traffic. For other deployments, run `node dist-server/migrate.js` from the application container (or `npm run db:migrate` from the repository root during development). This applies migrations 001–005: player, player-session, game-session, player-progress, and daily mission tracking schema. The SQL uses `IF NOT EXISTS` and can be safely re-run.
 8. Start the API and check `GET /ready`. It should return HTTP 200 only when PostgreSQL is reachable.
 
 ## Environment variables
