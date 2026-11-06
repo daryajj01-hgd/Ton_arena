@@ -11,9 +11,9 @@
 
 ## One-time setup
 
-1. Create a Neon account and a project using the closest available region to the chosen application hosting region.
+1. Create a Neon account and a project in Frankfurt (`eu-central-1`) to match the Render staging service region.
 2. Create or use the default database and role.
-3. Copy the pooled or direct PostgreSQL connection string from Neon. Keep it private.
+3. Copy the pooled PostgreSQL connection string from Neon’s Connect panel (choose the pooled option). Keep it private.
 4. Set it as the server-side environment variable `DATABASE_URL`. Use Neon’s SSL-enabled connection string.
 5. Set `TELEGRAM_BOT_TOKEN` only as a server-side secret when Telegram authentication is ready.
 6. Set `BRAIN_SPRINT_ANSWER_KEY` as a server-only JSON array containing ten correct option indexes (each from 0 to 3). Never use a `VITE_` prefix or expose this value to the frontend. The game start endpoint fails closed if this secret is missing or invalid.
