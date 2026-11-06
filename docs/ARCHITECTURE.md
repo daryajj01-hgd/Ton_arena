@@ -81,7 +81,8 @@ Neon is selected as the initial PostgreSQL provider; the project is not yet prov
 ### Player progression
 - Completing a Brain Sprint round awards 10 participation XP plus 5 XP per correct answer (maximum 60 XP per completed round).
 - Player levels are derived at one level per 100 cumulative XP, starting at level 1.
-- XP and basic lifetime stats are persisted in `player_progress` and returned by authenticated `GET /api/progress`.
+- The first completed round each UTC calendar day awards a further 20 XP daily mission bonus. Completing on consecutive UTC days increases the streak; a missed day resets it.
+- XP, daily mission date/streak, and basic lifetime stats are persisted in `player_progress` and returned by authenticated `GET /api/progress`.
 - Authenticated `GET /api/leaderboard` returns the top ten by XP, then best score and games played; the client displays the top five and does not expose Telegram IDs or usernames.
 
 ### Game engine
