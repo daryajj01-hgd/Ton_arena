@@ -13,6 +13,9 @@
 - [x] Initial Node.js API skeleton with health endpoint.
 - [x] Reusable server-side Telegram Mini App initData validator with constant-time signature comparison and strict Telegram user ID validation.
 - [x] Automated Node.js tests for valid signatures, tampering, expired/future payloads, invalid user IDs, and invalid signatures.
+- [x] Initial PostgreSQL player-table migration and database connection/persistence module.
+- [x] Telegram identity verification now upserts the verified player record when the database is configured.
+- [x] Separate `/health` liveness and `/ready` database-readiness endpoints.
 - [x] CI runs frontend type-checking, backend compilation, Telegram authentication tests, and frontend production build as separate steps.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
 
@@ -22,7 +25,8 @@
 - Translations are initial product copy and should receive native-speaker review before public launch.
 - The 11-language foundation is extensible; it does not mean every world language has been added.
 - Answers, countdown, and score are handled in the browser only.
-- The API currently validates Telegram initData but does not yet create persistent accounts or server sessions.
+- The PostgreSQL schema and persistence code are committed, but no database provider has been connected and the migration has not been applied. Player persistence is therefore not live yet.
+- The API does not yet issue secure player sessions; Telegram identity verification is not yet a complete login/session system.
 - No database, server-side game sessions/scoring, anti-cheat system, XP persistence, or live leaderboard exists yet.
 - The production build, backend compilation, and authentication tests have not yet been confirmed by a completed GitHub Actions run. CI has separate steps so a failing stage is identifiable.
 - Do not use this prototype for paid play, prizes, or competitive rankings.
@@ -30,5 +34,6 @@
 ## Next milestone
 1. Verify language switching and RTL/LTR rendering on mobile.
 2. Confirm the GitHub Actions build passes and test the app in a live browser.
-3. Connect the Telegram bot token as a server-only secret and test signed Telegram launch data.
-4. Add persistent player storage and server-side game sessions/scoring.
+3. Select and connect a PostgreSQL provider; apply the initial player migration.
+4. Configure the Telegram bot token as a server-only secret and test signed Telegram launch data end-to-end.
+5. Add secure player sessions, then server-side game sessions/scoring.
