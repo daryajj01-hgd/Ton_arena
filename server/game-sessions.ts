@@ -1,6 +1,6 @@
 import { getDatabasePool } from "./database.js";
 import {
-  BRAIN_SPRINT_ANSWER_KEY,
+  getBrainSprintAnswerKey,
   BRAIN_SPRINT_QUESTION_COUNT,
   BRAIN_SPRINT_QUESTION_SECONDS,
   BRAIN_SPRINT_SESSION_SECONDS,
@@ -24,7 +24,7 @@ export async function startBrainSprint(playerId: string): Promise<{
   questionOrder: number[];
   expiresAt: string;
 }> {
-  const questionOrder = createBrainSprintQuestionOrder();
+  getBrainSprintAnswerKey(); // Fail closed if the server-only answer key is not configured.\n  const questionOrder = createBrainSprintQuestionOrder();
   const expiresAt = new Date(Date.now() + BRAIN_SPRINT_SESSION_SECONDS * 1000);
   const result = await getDatabasePool().query<{ id: string }>(
     `INSERT INTO game_sessions (player_id, game_code, question_order, expires_at)
@@ -58,7 +58,7 @@ export async function submitBrainSprintAnswer(input: {
     return { status: "invalid_question" };
   }
 
-  const pool = getDatabasePool();
+  const answerKey = getBrainSprintAnswerKey();\n  const pool = getDatabasePool();
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -94,7 +94,7 @@ export async function submitBrainSprintAnswer(input: {
       questionIndex >= BRAIN_SPRINT_QUESTION_COUNT ||
       !Number.isInteger(questionId) ||
       questionId < 0 ||
-      questionId >= BRAIN_SPRINT_ANSWER_KEY.length
+      questionId >= answerKey.length
     ) {
       await client.query("ROLLBACK");
       return { status: "invalid_question" };
@@ -103,7 +103,7 @@ export async function submitBrainSprintAnswer(input: {
     const elapsedMs = Math.max(0, Date.now() - new Date(session.question_started_at).getTime());
     const timedOut = elapsedMs > BRAIN_SPRINT_QUESTION_SECONDS * 1000;
     const acceptedAnswer = timedOut ? -1 : input.answerIndex;
-    const isCorrect = evaluateBrainSprintAnswer(questionId, acceptedAnswer);
+    const isCorrect = evaluateBrainSprintAnswer(questionId, acceptedAnswer, answerKey);
     const responseMs = Math.min(elapsedMs, BRAIN_SPRINT_QUESTION_SECONDS * 1000);
     const nextQuestionIndex = questionIndex + 1;
     const completed = nextQuestionIndex >= BRAIN_SPRINT_QUESTION_COUNT;
@@ -130,7 +130,7 @@ export async function submitBrainSprintAnswer(input: {
     return {
       status: "accepted",
       isCorrect,
-      correctAnswerIndex: BRAIN_SPRINT_ANSWER_KEY[questionId],
+      correctAnswerIndex: answerKey[questionId],
       score: newScore,
       answeredQuestionIndex: questionIndex,
       completed,
