@@ -4,6 +4,7 @@ import { getDatabasePool, type PlayerRecord } from "./database.js";
 const SESSION_TTL_DAYS = 7;
 
 export type AuthenticatedPlayer = {
+  [column: string]: unknown;
   id: string;
   telegram_id: string;
   first_name: string | null;
