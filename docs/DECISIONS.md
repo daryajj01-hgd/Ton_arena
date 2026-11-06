@@ -4,6 +4,16 @@ This file records confirmed decisions separately from proposals. New decisions s
 
 ## Confirmed decisions
 
+### 2026-11-06 — Multi-game ecosystem, not a single-game destination
+**Decision:** BRAIN SPRINT is the first MVP and validation game only. The long-term product is one connected ecosystem that expands to multiple games, TON ACADEMY, and TON CLUB.  
+**Reason:** The product vision is a substantial, evolving destination for skill-based entertainment, learning, and community—not a one-game app.  
+**Consequences:** Build shared identity, profiles, progression, missions, and platform services so future games and modules can be added without duplicating foundations. Expansion remains phased and evidence-led.
+
+### 2026-11-06 — Healthy engagement by design
+**Decision:** Earn repeat visits through enjoyable gameplay, mastery, fair competition, meaningful progress, fresh content, and community—not manipulative or compulsive mechanics.  
+**Reason:** Long-term trust and user wellbeing are part of product quality.  
+**Consequences:** Avoid punitive streak loss, manipulative scarcity, pay-to-win advantages, and pressure-based notifications; provide notification controls and natural stopping points.
+
 ### 2026-11-06 — One connected ecosystem
 **Decision:** TON ARENA, TON ACADEMY, and TON CLUB are product areas in one shared ecosystem, not three independent apps.  
 **Reason:** Shared identity, progression, missions, and community foundations reduce duplication and support future growth.
