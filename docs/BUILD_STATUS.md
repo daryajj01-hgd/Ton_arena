@@ -27,6 +27,9 @@
 - [x] Authenticated API routes to start a Brain Sprint round and submit answers; server enforces the 15-second question window and 5-minute round expiry.
 - [x] Unit tests for answer evaluation, invalid answer rejection, randomized question-order integrity, and server-only answer-key validation.
 - [x] Removed answer indexes from the current localized frontend question data; server scoring now reads `BRAIN_SPRINT_ANSWER_KEY` from a server-only environment variable and fails closed when missing or invalid.
+- [x] Persistent player progression schema for XP, completed games, total correct answers, and best score.
+- [x] Server awards 10 XP for completing a round plus 5 XP per correct answer; levels advance every 100 XP.
+- [x] Authenticated progress API and frontend level/XP display; result screen shows earned and cumulative XP.
 - [x] Frontend session token is kept in memory only; a fresh Telegram launch re-authenticates rather than persisting a bearer token in browser storage.
 - [x] CI runs frontend type-checking, backend compilation, Telegram authentication tests, and frontend production build as separate steps.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
