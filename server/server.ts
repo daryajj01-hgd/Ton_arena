@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { checkDatabaseConnection, upsertPlayer } from "./database.js";
 import { createPlayerSession, findPlayerBySession, revokePlayerSession } from "./sessions.js";
-import { startBrainSprint, submitBrainSprintAnswer } from "./game-sessions.js";
+import { getPlayerProgress, startBrainSprint, submitBrainSprintAnswer } from "./game-sessions.js";
 import { validateTelegramInitData } from "./telegram-auth.js";
 
 const PORT = Number(process.env.PORT ?? 3001);
@@ -137,6 +137,27 @@ const server = createServer(async (request, response) => {
       });
     } catch {
       sendJson(response, 503, { ok: false, error: "SESSION_SERVICE_UNAVAILABLE" });
+    }
+    return;
+  }
+
+  if (request.method === "GET" && request.url === "/api/progress") {
+    const authorization = request.headers.authorization ?? "";
+    const match = /^Bearer ([A-Za-z0-9_-]{40,60})$/.exec(authorization);
+    if (!match) {
+      sendJson(response, 401, { ok: false, error: "UNAUTHENTICATED" });
+      return;
+    }
+    try {
+      const player = await findPlayerBySession(match[1]);
+      if (!player) {
+        sendJson(response, 401, { ok: false, error: "SESSION_INVALID_OR_EXPIRED" });
+        return;
+      }
+      const progress = await getPlayerProgress(player.id);
+      sendJson(response, 200, { ok: true, progress });
+    } catch {
+      sendJson(response, 503, { ok: false, error: "PROGRESS_SERVICE_UNAVAILABLE" });
     }
     return;
   }
