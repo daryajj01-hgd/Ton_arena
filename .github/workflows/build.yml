@@ -38,3 +38,16 @@ jobs:
 
       - name: Build production Docker image
         run: docker build -t ton-arena:ci .
+
+      - name: Smoke-test production container
+        run: |
+          docker run -d --name ton-arena-ci -p 3001:3001 ton-arena:ci
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:3001/health >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3001/health
+          curl -fsS http://127.0.0.1:3001/ | grep -q 'id="root"'
+          docker rm -f ton-arena-ci
