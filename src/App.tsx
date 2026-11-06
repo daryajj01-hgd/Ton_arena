@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { localeOptions, translations, type Locale } from "./i18n";
-import { authenticateTelegram, getCurrentPlayer, getPlayerProgress, startBrainSprint, submitBrainSprintAnswer, type PlayerProgress } from "./api";
+import { authenticateTelegram, getCurrentPlayer, getPlayerProgress, getLeaderboard, startBrainSprint, submitBrainSprintAnswer, type PlayerProgress, type LeaderboardEntry } from "./api";
 
 const QUESTION_SECONDS = 15;
 
@@ -20,6 +20,7 @@ export default function App() {
   const [timeLeft, setTimeLeft] = useState(QUESTION_SECONDS);
   const [playerName, setPlayerName] = useState<string | null>(null);
   const [playerProgress, setPlayerProgress] = useState<PlayerProgress | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [xpEarned, setXpEarned] = useState(0);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [gameSessionId, setGameSessionId] = useState<string | null>(null);
@@ -61,6 +62,12 @@ export default function App() {
         } catch {
           // Authentication remains valid even if the optional progress read fails.
         }
+        try {
+          const ranking = await getLeaderboard(auth.session.token);
+          if (!cancelled) setLeaderboard(ranking.leaderboard);
+        } catch {
+          // The game remains playable if the leaderboard is unavailable.
+        }
       } catch {
         if (!cancelled) setPlayerName(null);
       } finally {
@@ -94,6 +101,14 @@ export default function App() {
             totalCorrect: (current?.totalCorrect ?? 0) + response.result.score,
             bestScore: Math.max(current?.bestScore ?? 0, response.result.score)
           }));
+          if (sessionToken) {
+            try {
+              const ranking = await getLeaderboard(sessionToken);
+              setLeaderboard(ranking.leaderboard);
+            } catch {
+              // Keep the completed result even if the ranking refresh fails.
+            }
+          }
         }
       } else {
         setServerCorrect(null);
@@ -233,6 +248,19 @@ export default function App() {
             <div><strong>15</strong><span>{t.secondsEach}</span></div>
             <div><strong>0</strong><span>{t.entryFee}</span></div>
           </div>
+          {leaderboard.length > 0 && (
+            <section className="leaderboard-card">
+              <h2>{t.leaderboardTitle}</h2>
+              {leaderboard.slice(0, 5).map((entry) => (
+                <div className="leaderboard-row" key={entry.rank}>
+                  <span className="leaderboard-rank">#{entry.rank}</span>
+                  <strong>{entry.displayName}</strong>
+                  <span className="leaderboard-level">LV {entry.level}</span>
+                  <b>{entry.xp} XP</b>
+                </div>
+              ))}
+            </section>
+          )}
         </section>
       ) : finished ? (
         <section className="quiz-panel result-panel">
