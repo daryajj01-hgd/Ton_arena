@@ -61,3 +61,12 @@ h1 span{color:#55e0bd}
 
 .progress-chip{border:1px solid #8fa7c355;border-radius:99px;padding:6px 10px;color:#b8cbe0;font-size:10px;white-space:nowrap;background:#8fa7c30b;direction:ltr}
 .xp-earned{margin:0 auto 20px;color:#70e2c7;font-size:13px;font-weight:700;direction:ltr}
+
+.leaderboard-card{margin:28px 0 10px;padding:17px 18px;text-align:start;background:#111e30aa;border:1px solid #ffffff18;border-radius:16px}
+.leaderboard-card h2{margin:0 0 12px;color:#6fdcc2;font-size:11px;letter-spacing:1px}
+.leaderboard-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto auto;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #ffffff10;font-size:11px}
+.leaderboard-row strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#e7edf5}
+.leaderboard-rank{color:#6fdcc2;font-weight:800;direction:ltr}
+.leaderboard-level{color:#91a6bf;white-space:nowrap}
+.leaderboard-row b{color:#70e2c7;white-space:nowrap;direction:ltr}
+@media(max-width:420px){.leaderboard-row{grid-template-columns:26px minmax(0,1fr) auto auto;gap:7px;font-size:10px}.leaderboard-card{padding:14px}}
