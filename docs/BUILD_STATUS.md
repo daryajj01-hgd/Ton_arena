@@ -36,7 +36,8 @@
 - [x] Frontend session token is kept in memory only; a fresh Telegram launch re-authenticates rather than persisting a bearer token in browser storage.
 - [x] Basic API rate limiting: 10 Telegram auth attempts per IP/minute, 5 game starts per player/minute, 30 answers per player/minute, and bounded read-route limits.
 - [x] Node API serves the built frontend from the same origin, with SPA fallback and safe static path resolution.
-- [x] Multi-stage Dockerfile packages the frontend, API, and migrations without embedding environment secrets.
+- [x] Multi-stage non-root Docker image packages the frontend, API, and migrations without embedding environment secrets.
+- [x] Render staging Blueprint in Frankfurt, with server-side secrets prompted during setup, trusted-proxy handling, health checks, CI-gated deploys, and optional startup migrations.
 - [x] CI verifies frontend type-checking, backend compilation, tests, frontend build, Docker image build, and container smoke tests for `/health` plus the served frontend.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
 
@@ -46,7 +47,7 @@
 - Translations are initial product copy and should receive native-speaker review before public launch.
 - The 11-language foundation is extensible; it does not mean every world language has been added.
 - In a verified Telegram Mini App session, submitted answers and score are processed by the server; the browser timer is a display aid and the server enforces the question and round deadlines. Outside Telegram, the app still offers a local preview.
-- Neon has been selected, but no Neon project/account has been created or connected and migrations 001–005 have not been applied. Player persistence is therefore not live yet.
+- Neon has been selected, but no Neon project/account has been created or connected and migrations 001–005 have not been applied. A Render Free staging Blueprint is prepared but has not been connected or deployed. Player persistence is therefore not live yet.
 - Frontend Telegram sign-in and server game API integration are implemented in source. They still need a live Mini App end-to-end test against a provisioned database and deployed API. Do not consider authentication production-ready.
 - Server-side Brain Sprint sessions, scoring, XP, daily mission, and leaderboard code passed GitHub Actions. These features cannot run against real players until Neon is provisioned and all five migrations are applied. Earlier public commits exposed the prototype answer indexes, so this question set must be replaced before competitive public launch.
 - XP, daily mission, and leaderboard features are implemented in code but are not live until Neon is connected and migrations are applied. Basic in-memory limits now protect Telegram auth and player/game endpoints; distributed rate limiting and full anti-cheat controls remain outstanding.
