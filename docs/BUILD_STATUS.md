@@ -25,7 +25,8 @@
 - [x] Frontend detects Telegram Mini App launch data, exchanges it for a server session, verifies the session via `/api/me`, and shows the verified player name.
 - [x] Server-side Brain Sprint game-session schema with randomized question order, per-question answer records, server timestamps, and authoritative scoring.
 - [x] Authenticated API routes to start a Brain Sprint round and submit answers; server enforces the 15-second question window and 5-minute round expiry.
-- [x] Unit tests for answer evaluation, invalid answer rejection, and randomized question-order integrity.
+- [x] Unit tests for answer evaluation, invalid answer rejection, randomized question-order integrity, and server-only answer-key validation.
+- [x] Removed answer indexes from the current localized frontend question data; server scoring now reads `BRAIN_SPRINT_ANSWER_KEY` from a server-only environment variable and fails closed when missing or invalid.
 - [x] Frontend session token is kept in memory only; a fresh Telegram launch re-authenticates rather than persisting a bearer token in browser storage.
 - [x] CI runs frontend type-checking, backend compilation, Telegram authentication tests, and frontend production build as separate steps.
 - [x] Automated GitHub Actions workflow with separate frontend type-check, backend TypeScript compilation, and frontend production-build steps.
@@ -46,8 +47,8 @@
 ## Next milestone
 1. Confirm the latest GitHub Actions run passes after frontend game integration.
 2. Create and connect the Neon project; apply migrations 001–003.
-3. Configure Telegram bot token as a server-only secret and deploy the API.
+3. Configure Telegram bot token and `BRAIN_SPRINT_ANSWER_KEY` as server-only secrets, then deploy the API.
 4. Test Telegram sign-in and complete Brain Sprint rounds end-to-end.
-5. Move the question bank and answer key out of the public frontend/repository before competitive launch.
+5. Replace the prototype question bank with fresh questions and protected answer keys before competitive launch.
 6. Add XP persistence, player progression, and leaderboards.
 7. Verify language switching, RTL/LTR, and accessibility on real mobile devices.
